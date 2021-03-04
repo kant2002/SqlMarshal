@@ -1,0 +1,15 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+
+  "settings": {
+    "documentationRules": {
+      "documentationCulture": "en-US",
+      "companyName": "Andrii Kurdiumov",
+      "copyrightText": "Copyright (c) {companyName}. All rights reserved.",
+      "headerDecoration": "-----------------------------------------------------------------------",
+      "xmlHeader": true,
+      "documentInterfaces": true,
+      "documentInternalElements": false
+    }
+  }
+}
