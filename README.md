@@ -1,6 +1,8 @@
 Stored Procedures generator
 ===========================
 
+[![NuGet](https://img.shields.io/nuget/v/StoredProcedureSourceGenerator.svg?style=flat)](https://www.nuget.org/packages/StoredProcedureSourceGenerator/)
+
 This project generates function for accessing stored procedures. Goal of this project to be AOT friendly.
 For now only access to EF Core DbContext is available, but in principle this project can be adapted to map
 values directly to DbConnection.
