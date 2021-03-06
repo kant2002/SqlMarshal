@@ -16,7 +16,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated(""persons_list"")]
+    [StoredProcedureGenerated("persons_list")]
     public partial IList<Item> GetResult();
 }
 ```
@@ -31,7 +31,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated(""persons_search"")]
+    [StoredProcedureGenerated("persons_search")]
     public partial IList<Item> GetResults(string name, string city);
 }
 ```
@@ -45,7 +45,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated(""persons_by_id"")]
+    [StoredProcedureGenerated("persons_by_id")]
     public partial Item GetResults(int personId);
 }
 ```
@@ -59,7 +59,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated(""total_orders"")]
+    [StoredProcedureGenerated("total_orders")]
     public partial int GetTotal(int clientId);
 }
 ```
@@ -73,7 +73,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated(""persons_search_ex"")]
+    [StoredProcedureGenerated("persons_search_ex")]
     public partial IList<Item> GetResults2(string name, string city, out int totalCount);
 }
 ```
