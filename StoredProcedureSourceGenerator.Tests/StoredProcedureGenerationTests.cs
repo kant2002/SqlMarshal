@@ -481,8 +481,8 @@ namespace Foo
 
             var personIdParameter = command.CreateParameter();
             personIdParameter.ParameterName = ""@person_id"";
-            personIdParameter.DbType = DbType.Int32;
-            personIdParameter.Direction = ParameterDirection.Output;
+            personIdParameter.DbType = System.Data.DbType.Int32;
+            personIdParameter.Direction = System.Data.ParameterDirection.Output;
 
             var parameters = new DbParameter[]
             {

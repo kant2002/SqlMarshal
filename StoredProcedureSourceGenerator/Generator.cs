@@ -290,8 +290,8 @@ namespace {namespaceName}
 ");
                     if (parameter.RefKind == RefKind.Out)
                     {
-                        source.Append($@"            {parameter.Name}Parameter.DbType = DbType.Int32;
-            {parameter.Name}Parameter.Direction = ParameterDirection.Output;
+                        source.Append($@"            {parameter.Name}Parameter.DbType = System.Data.DbType.Int32;
+            {parameter.Name}Parameter.Direction = System.Data.ParameterDirection.Output;
 
 ");
                     }
