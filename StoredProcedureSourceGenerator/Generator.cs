@@ -358,7 +358,19 @@ namespace {namespaceName}
             else
             {
                 source.Append($@"            var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(methodSymbol.Parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToList" : "FirstOrDefault")}();
-            return result;
+");
+                foreach (var parameter in methodSymbol.Parameters)
+                {
+                    if (parameter.RefKind != RefKind.Out)
+                    {
+                        continue;
+                    }
+
+                    source.Append($@"            {parameter.Name} = {parameter.Name}Parameter.Value == DbNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
+");
+                }
+
+                source.Append($@"            return result;
 ");
             }
 
