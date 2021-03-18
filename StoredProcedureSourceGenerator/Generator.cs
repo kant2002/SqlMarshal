@@ -282,9 +282,7 @@ namespace {namespaceName}
             {
                 foreach (var parameter in methodSymbol.Parameters)
                 {
-                    var requireParameterNullCheck = !hasNullableAnnotations
-                        && !(parameter.Type.IsValueType
-                            && parameter.Type.NullableAnnotation == NullableAnnotation.NotAnnotated);
+                    var requireParameterNullCheck = parameter.Type.CanHaveNullValue(hasNullableAnnotations);
                     source.Append($@"            var {parameter.Name}Parameter = command.CreateParameter();
             {parameter.Name}Parameter.ParameterName = ""@{NameMapper.MapName(parameter.Name)}"";
 ");
@@ -366,8 +364,17 @@ namespace {namespaceName}
                         continue;
                     }
 
-                    source.Append($@"            {parameter.Name} = {parameter.Name}Parameter.Value == DbNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
+                    var requireParameterNullCheck = parameter.Type.CanHaveNullValue(hasNullableAnnotations);
+                    if (requireParameterNullCheck)
+                    {
+                        source.Append($@"            {parameter.Name} = {parameter.Name}Parameter.Value == DbNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
 ");
+                    }
+                    else
+                    {
+                        source.Append($@"            {parameter.Name} = ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
+");
+                    }
                 }
 
                 source.Append($@"            return result;
