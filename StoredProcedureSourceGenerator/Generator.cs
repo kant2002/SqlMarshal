@@ -355,7 +355,7 @@ namespace {namespaceName}
             }
             else
             {
-                source.Append($@"            var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(methodSymbol.Parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToList" : "FirstOrDefault")}();
+                source.Append($@"            var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(methodSymbol.Parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToList" : "AsEnumerable().FirstOrDefault")}();
 ");
                 foreach (var parameter in methodSymbol.Parameters)
                 {

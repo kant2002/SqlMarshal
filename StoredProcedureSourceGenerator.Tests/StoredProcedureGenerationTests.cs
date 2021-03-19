@@ -103,7 +103,7 @@ namespace Foo
             using var command = connection.CreateCommand();
 
             var sqlQuery = @""sp_TestSP"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery).FirstOrDefault();
+            var result = this.dbContext.Items.FromSqlRaw(sqlQuery).AsEnumerable().FirstOrDefault();
             return result;
         }
     }
