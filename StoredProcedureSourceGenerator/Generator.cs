@@ -188,12 +188,17 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
                 return $"out {parameter.Type.ToDisplayString()} {parameter.Name}";
             }
 
+            if (parameter.RefKind == RefKind.Ref)
+            {
+                return $"ref {parameter.Type.ToDisplayString()} {parameter.Name}";
+            }
+
             return $"{parameter.Type.ToDisplayString()} {parameter.Name}";
         }
 
         private static string GetParameterPassing(IParameterSymbol parameter)
         {
-            if (parameter.RefKind == RefKind.Out)
+            if (parameter.RefKind == RefKind.Out || parameter.RefKind == RefKind.Ref)
             {
                 return "@" + NameMapper.MapName(parameter.Name) + " OUTPUT";
             }
@@ -286,28 +291,31 @@ namespace {namespaceName}
                     source.Append($@"            var {parameter.Name}Parameter = command.CreateParameter();
             {parameter.Name}Parameter.ParameterName = ""@{NameMapper.MapName(parameter.Name)}"";
 ");
-                    if (parameter.RefKind == RefKind.Out)
+                    if (parameter.RefKind == RefKind.Out || parameter.RefKind == RefKind.Ref)
                     {
                         source.Append($@"            {parameter.Name}Parameter.DbType = System.Data.DbType.Int32;
-            {parameter.Name}Parameter.Direction = System.Data.ParameterDirection.Output;
-
+");
+                        var direction = parameter.RefKind == RefKind.Out ? "System.Data.ParameterDirection.Output" : "System.Data.ParameterDirection.InputOutput";
+                        source.Append($@"            {parameter.Name}Parameter.Direction = {direction};
 ");
                     }
-                    else
+
+                    if (parameter.RefKind == RefKind.None || parameter.RefKind == RefKind.Ref)
                     {
                         if (requireParameterNullCheck)
                         {
                             source.Append($@"            {parameter.Name}Parameter.Value = {parameter.Name} == null ? (object)DBNull.Value : {parameter.Name};
-
 ");
                         }
                         else
                         {
                             source.Append($@"            {parameter.Name}Parameter.Value = {parameter.Name};
-
 ");
                         }
                     }
+
+                    source.Append($@"
+");
                 }
 
                 source.Append($@"            var parameters = new DbParameter[]
@@ -359,7 +367,8 @@ namespace {namespaceName}
 ");
                 foreach (var parameter in methodSymbol.Parameters)
                 {
-                    if (parameter.RefKind != RefKind.Out)
+                    var requireReadOutput = parameter.RefKind == RefKind.Out || parameter.RefKind == RefKind.Ref;
+                    if (!requireReadOutput)
                     {
                         continue;
                     }

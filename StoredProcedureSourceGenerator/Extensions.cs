@@ -12,9 +12,12 @@ namespace StoredProcedureSourceGenerator
     {
         public static bool CanHaveNullValue(this ITypeSymbol typeSymbol, bool hasNullableAnnotations)
         {
-            var requireParameterNullCheck = !hasNullableAnnotations
-                && !(typeSymbol.IsValueType
-                    && typeSymbol.NullableAnnotation == NullableAnnotation.NotAnnotated);
+            if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
+            {
+                return true;
+            }
+
+            var requireParameterNullCheck = !hasNullableAnnotations && !typeSymbol.IsValueType;
             return requireParameterNullCheck;
         }
     }
