@@ -1,4 +1,4 @@
-Stored Procedures generator
+SqlMarshal
 ===========================
 
 [![NuGet](https://img.shields.io/nuget/v/StoredProcedureSourceGenerator.svg?style=flat)](https://www.nuget.org/packages/StoredProcedureSourceGenerator/)
