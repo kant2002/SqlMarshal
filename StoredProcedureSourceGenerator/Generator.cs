@@ -206,6 +206,47 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
             return "@" + NameMapper.MapName(parameter.Name);
         }
 
+        private static string GetParameterSqlDbType(ITypeSymbol type)
+        {
+            if (type is INamedTypeSymbol namedTypeSymbol)
+            {
+                if (type.Name == "Nullable")
+                {
+                    return GetParameterSqlDbType(namedTypeSymbol.TypeArguments[0]);
+                }
+            }
+
+            switch (type.SpecialType)
+            {
+                case SpecialType.System_String:
+                    return "System.Data.DbType.String";
+                case SpecialType.System_Byte:
+                    return "System.Data.DbType.Byte";
+                case SpecialType.System_SByte:
+                    return "System.Data.DbType.SByte";
+                case SpecialType.System_Int16:
+                    return "System.Data.DbType.Int16";
+                case SpecialType.System_Int32:
+                    return "System.Data.DbType.Int32";
+                case SpecialType.System_Int64:
+                    return "System.Data.DbType.Int64";
+                case SpecialType.System_UInt16:
+                    return "System.Data.DbType.UInt16";
+                case SpecialType.System_UInt32:
+                    return "System.Data.DbType.UInt32";
+                case SpecialType.System_UInt64:
+                    return "System.Data.DbType.UInt64";
+                case SpecialType.System_Single:
+                    return "System.Data.DbType.Single";
+                case SpecialType.System_Double:
+                    return "System.Data.DbType.Double";
+                case SpecialType.System_DateTime:
+                    return "System.Data.DbType.DateTime2";
+                default:
+                    throw new System.NotImplementedException();
+            }
+        }
+
         private string? ProcessClass(
             INamedTypeSymbol classSymbol,
             List<IMethodSymbol> methods,
@@ -293,7 +334,8 @@ namespace {namespaceName}
 ");
                     if (parameter.RefKind == RefKind.Out || parameter.RefKind == RefKind.Ref)
                     {
-                        source.Append($@"            {parameter.Name}Parameter.DbType = System.Data.DbType.Int32;
+                        var parameterSqlDbType = GetParameterSqlDbType(parameter.Type);
+                        source.Append($@"            {parameter.Name}Parameter.DbType = {parameterSqlDbType};
 ");
                         var direction = parameter.RefKind == RefKind.Out ? "System.Data.ParameterDirection.Output" : "System.Data.ParameterDirection.InputOutput";
                         source.Append($@"            {parameter.Name}Parameter.Direction = {direction};

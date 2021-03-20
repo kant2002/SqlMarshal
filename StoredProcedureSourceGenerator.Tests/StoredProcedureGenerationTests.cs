@@ -605,7 +605,7 @@ namespace Foo
 
             var personIdParameter = command.CreateParameter();
             personIdParameter.ParameterName = ""@person_id"";
-            personIdParameter.DbType = System.Data.DbType.Int32;
+            personIdParameter.DbType = System.Data.DbType.String;
             personIdParameter.Direction = System.Data.ParameterDirection.Output;
 
             var parameters = new DbParameter[]
