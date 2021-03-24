@@ -607,6 +607,7 @@ namespace Foo
             personIdParameter.ParameterName = ""@person_id"";
             personIdParameter.DbType = System.Data.DbType.String;
             personIdParameter.Direction = System.Data.ParameterDirection.Output;
+            personIdParameter.Size = 150;
 
             var parameters = new DbParameter[]
             {
@@ -868,6 +869,7 @@ namespace Foo
             personIdParameter.ParameterName = ""@person_id"";
             personIdParameter.DbType = System.Data.DbType.String;
             personIdParameter.Direction = System.Data.ParameterDirection.Output;
+            personIdParameter.Size = 150;
 
             var parameters = new DbParameter[]
             {
@@ -941,6 +943,7 @@ namespace Foo
             personIdParameter.ParameterName = ""@person_id"";
             personIdParameter.DbType = System.Data.DbType.String;
             personIdParameter.Direction = System.Data.ParameterDirection.Output;
+            personIdParameter.Size = 150;
 
             var parameters = new DbParameter[]
             {

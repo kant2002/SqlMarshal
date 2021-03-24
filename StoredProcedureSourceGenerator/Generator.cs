@@ -340,6 +340,11 @@ namespace {namespaceName}
                         var direction = parameter.RefKind == RefKind.Out ? "System.Data.ParameterDirection.Output" : "System.Data.ParameterDirection.InputOutput";
                         source.Append($@"            {parameter.Name}Parameter.Direction = {direction};
 ");
+                        if (parameter.Type.SpecialType == SpecialType.System_String)
+                        {
+                            source.Append($@"            {parameter.Name}Parameter.Size = 150;
+");
+                        }
                     }
 
                     if (parameter.RefKind == RefKind.None || parameter.RefKind == RefKind.Ref)
