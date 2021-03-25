@@ -14,12 +14,22 @@ Database connection can be used from the DbContext of DbConnection objects.
     - [Output parameters](#Output-parameters)
     - [Procedure which returns single row](#Procedure-which-returns-single-row)
     - [Scalar resuls](#Scalar-resuls)
+    - [INSERT or UPDATE](#Without-results)
 - [DbContext examples](#dbcontext-examples)
     - [Stored procedures which returns resultset](#stored-procedures-which-returns-resultset-1)
     - [Adding parameters](#Adding-parameters-1)
     - [Output parameters](#Output-parameters-1)
     - [Procedure which returns single row](#Procedure-which-returns-single-row-1)
     - [Scalar resuls](#Scalar-resuls-1)
+    - [INSERT or UPDATE](#Without-results-1)
+
+# Temporary limitations
+Current version of library has several limitation which not becasue it cannot be implemented reasonably,
+but because there was lack ot time to think through all options. So I list all current limitations, so any user would be aware
+- No ability to specify length of intput/output string parameters, or type `varchar`/`nvarchar`.
+- No ability execute custom SQL
+- Simplified ORM for just mapping object properties from DbDataReader
+- Ability to specify fields in code in the order different then returned from SQL.
 
 ## DbConnection examples
 
@@ -96,6 +106,19 @@ public partial class DataContext
 
 This code translated to `EXEC total_orders @client_id`. Instead of executing over data reader, ExecuteScalar called. 
 
+### Without results
+
+```
+public partial class DataContext
+{
+    private DbConnection connection;
+
+    [StoredProcedureGenerated("process_data")]
+    public partial void ProcessData(int year);
+}
+```
+
+This code translated to `EXEC process_data @year`. No data was returned, ExecuteNonQuery called. 
 
 ## DbContext examples
 
@@ -170,3 +193,17 @@ public partial class DataContext
 ```
 
 This code translated to `EXEC total_orders @client_id`. Instead of executing over data reader, ExecuteScalar called. 
+
+### Without results
+
+```
+public partial class DataContext
+{
+    private CustomDbContext dbContext;
+
+    [StoredProcedureGenerated("process_data")]
+    public partial void ProcessData(int year);
+}
+```
+
+This code translated to `EXEC process_data @year`. No data was returned, ExecuteNonQuery called. 
