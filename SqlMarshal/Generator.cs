@@ -458,12 +458,14 @@ namespace {namespaceName}
                 source.Append($@"var parameters = new DbParameter[]
             {{
 ");
+                source.PushIndent();
                 foreach (var parameter in methodSymbol.Parameters)
                 {
-                    source.Append($@"    {parameter.Name}Parameter,
+                    source.Append($@"{parameter.Name}Parameter,
 ");
                 }
 
+                source.PopIndent();
                 source.Append(@"};
 
 ");
@@ -500,15 +502,14 @@ namespace {namespaceName}
             try
             {{
 ");
+                source.PushIndent();
                 if (returnType.SpecialType == SpecialType.System_Void)
                 {
-                    source.Append($@"    command.ExecuteNonQuery();
-");
+                    source.AppendLine($@"command.ExecuteNonQuery();");
                 }
                 else
                 {
-                    source.Append($@"    var result = command.ExecuteScalar();
-");
+                    source.AppendLine($@"var result = command.ExecuteScalar();");
                 }
 
                 foreach (var parameter in methodSymbol.Parameters)
@@ -522,13 +523,11 @@ namespace {namespaceName}
                     var requireParameterNullCheck = parameter.Type.CanHaveNullValue(hasNullableAnnotations);
                     if (requireParameterNullCheck)
                     {
-                        source.Append($@"    {parameter.Name} = {parameter.Name}Parameter.Value == DBNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
-");
+                        source.AppendLine($@"{parameter.Name} = {parameter.Name}Parameter.Value == DBNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;");
                     }
                     else
                     {
-                        source.Append($@"    {parameter.Name} = ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
-");
+                        source.AppendLine($@"{parameter.Name} = ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;");
                     }
                 }
 
@@ -536,16 +535,15 @@ namespace {namespaceName}
                 {
                     if (returnType.CanHaveNullValue(hasNullableAnnotations))
                     {
-                        source.Append($@"    return result == DBNull.Value ? ({returnType.ToDisplayString()})null : ({GetUnderlyingType(returnType).ToDisplayString()})result;
-");
+                        source.AppendLine($@"return result == DBNull.Value ? ({returnType.ToDisplayString()})null : ({GetUnderlyingType(returnType).ToDisplayString()})result;");
                     }
                     else
                     {
-                        source.Append($@"    return ({returnType.ToDisplayString()})result;
-");
+                        source.AppendLine($@"return ({returnType.ToDisplayString()})result;");
                     }
                 }
 
+                source.PopIndent();
                 source.Append($@"}}
             finally
             {{
