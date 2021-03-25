@@ -479,7 +479,7 @@ namespace {namespaceName}
                     var requireParameterNullCheck = parameter.Type.CanHaveNullValue(hasNullableAnnotations);
                     if (requireParameterNullCheck)
                     {
-                        source.Append($@"                {parameter.Name} = {parameter.Name}Parameter.Value == DbNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
+                        source.Append($@"                {parameter.Name} = {parameter.Name}Parameter.Value == DBNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
 ");
                     }
                     else
@@ -513,7 +513,7 @@ namespace {namespaceName}
                     var requireParameterNullCheck = parameter.Type.CanHaveNullValue(hasNullableAnnotations);
                     if (requireParameterNullCheck)
                     {
-                        source.Append($@"            {parameter.Name} = {parameter.Name}Parameter.Value == DbNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
+                        source.Append($@"            {parameter.Name} = {parameter.Name}Parameter.Value == DBNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
 ");
                     }
                     else
