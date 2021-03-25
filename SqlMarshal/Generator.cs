@@ -459,7 +459,7 @@ namespace {namespaceName}
             }
 
             var isList = itemType != returnType;
-            if (IsScalarType(returnType) || returnType.SpecialType == SpecialType.System_Void)
+            if (IsScalarType(GetUnderlyingType(returnType)) || returnType.SpecialType == SpecialType.System_Void)
             {
                 source.Append($@"            command.CommandText = sqlQuery;
 ");
@@ -507,8 +507,16 @@ namespace {namespaceName}
 
                 if (returnType.SpecialType != SpecialType.System_Void)
                 {
-                    source.Append($@"                return ({returnType.ToDisplayString()})result;
+                    if (returnType.CanHaveNullValue(hasNullableAnnotations))
+                    {
+                        source.Append($@"                return result == DBNull.Value ? ({returnType.ToDisplayString()})null : ({GetUnderlyingType(returnType).ToDisplayString()})result;
 ");
+                    }
+                    else
+                    {
+                        source.Append($@"                return ({returnType.ToDisplayString()})result;
+");
+                    }
                 }
 
                 source.Append($@"            }}
