@@ -205,30 +205,23 @@ namespace Foo
 
     partial class C
     {
-        public partial IList<Item> M()
+        public partial IList<Foo.Item> M()
         {
             var connection = this.connection;
             using var command = connection.CreateCommand();
 
             var sqlQuery = @""sp_TestSP"";
-            connection.Open();
-            try
+            command.CommandText = sqlQuery;
+            using var reader = command.ExecuteReader();
+            var result = new List<Item>();
+            while (reader.Read())
             {
-                using var reader = command.ExecuteReader();
-                var result = new List<Item>();
-                while (reader.Read())
-                {
-                    var item = new Item();
-                    item.Value = reader.GetString(0);
-                    result.Add(item);
-                }
+                var item = new Item();
+                item.Value = reader.GetString(0);
+                result.Add(item);
+            }
 
-                return result;
-            }
-            finally
-            {
-                this.connection.Close();
-            }
+            return result;
         }
     }
 }";

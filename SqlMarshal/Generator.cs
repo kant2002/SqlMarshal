@@ -397,6 +397,29 @@ namespace {namespaceName}
             return $"this.{contextName}.Database.CloseConnection();";
         }
 
+        private string MapResults(IMethodSymbol methodSymbol, ITypeSymbol itemType, bool isList)
+        {
+            var classSymbol = methodSymbol.ContainingType;
+            var connectionSymbol = GetConnectionField(classSymbol);
+            if (connectionSymbol != null)
+            {
+                return $@"using var reader = command.ExecuteReader();
+            var result = new List<{itemType.Name}>();
+            while (reader.Read())
+            {{
+                var item = new {itemType.Name}();
+                item.Value = reader.GetString(0);
+                result.Add(item);
+            }}
+";
+            }
+
+            var dbContextSymbol = GetContextField(classSymbol);
+            var contextName = dbContextSymbol?.Name ?? "dbContext";
+            var itemTypeProperty = GetDbSetField(dbContextSymbol, itemType)?.Name ?? itemType.Name + "s";
+            return $"var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(methodSymbol.Parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToList" : "AsEnumerable().FirstOrDefault")}();";
+        }
+
         private void ProcessMethod(
             StringBuilder source,
             IMethodSymbol methodSymbol,
@@ -413,8 +436,6 @@ namespace {namespaceName}
             TypedConstant overridenNameOpt = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "PropertyName").Value;
             var procedureName = attributeData.ConstructorArguments.ElementAtOrDefault(0);
             var signature = $"({string.Join(", ", methodSymbol.Parameters.Select(_ => GetParameterDeclaration(_)))})";
-            var dbContextSymbol = GetContextField(methodSymbol.ContainingType);
-            var contextName = dbContextSymbol?.Name ?? "dbContext";
             var itemType = GetUnderlyingType(returnType);
             var getConnection = this.GetConnectionStatement(methodSymbol.ContainingType);
             source.Append($@"        {GetAccessibility(symbol.DeclaredAccessibility)} partial {returnType} {methodSymbol.Name}{signature}
@@ -459,7 +480,10 @@ namespace {namespaceName}
             }
 
             var isList = itemType != returnType;
-            if (IsScalarType(GetUnderlyingType(returnType)) || returnType.SpecialType == SpecialType.System_Void)
+            var isScalarType = IsScalarType(GetUnderlyingType(returnType))
+                || returnType.SpecialType == SpecialType.System_Void;
+            var requireDbCommandParameters = isScalarType || GetConnectionField(methodSymbol.ContainingType) != null;
+            if (requireDbCommandParameters)
             {
                 source.Append($@"            command.CommandText = sqlQuery;
 ");
@@ -468,7 +492,10 @@ namespace {namespaceName}
                     source.Append($@"            command.Parameters.AddRange(parameters);
 ");
                 }
+            }
 
+            if (isScalarType)
+            {
                 source.Append($@"            {this.GetOpenConnectionStatement(methodSymbol.ContainingType)}
             try
             {{
@@ -528,8 +555,7 @@ namespace {namespaceName}
             }
             else
             {
-                var itemTypeProperty = GetDbSetField(dbContextSymbol, itemType)?.Name ?? itemType.Name + "s";
-                source.Append($@"            var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(methodSymbol.Parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToList" : "AsEnumerable().FirstOrDefault")}();
+                source.Append($@"            {this.MapResults(methodSymbol, itemType, isList)}
 ");
                 foreach (var parameter in methodSymbol.Parameters)
                 {
