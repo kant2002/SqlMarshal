@@ -22,6 +22,8 @@ Database connection can be used from the DbContext of DbConnection objects.
     - [Procedure which returns single row](#Procedure-which-returns-single-row-1)
     - [Scalar resuls](#Scalar-resuls-1)
     - [INSERT or UPDATE](#Without-results-1)
+- [Alternative options](#Alternative-options)
+    - [Async methods](#Async-methods)
 
 # Temporary limitations
 Current version of library has several limitation which not becasue it cannot be implemented reasonably,
@@ -207,3 +209,30 @@ public partial class DataContext
 ```
 
 This code translated to `EXEC process_data @year`. No data was returned, ExecuteNonQuery called. 
+
+
+## Alternative options
+
+### Async methods
+
+```
+public partial class DataContext
+{
+    private DbConnection connection;
+
+    [StoredProcedureGenerated("total_orders")]
+    public partial Task<int> GetTotal(int clientId);
+}
+```
+
+or
+
+```
+public partial class DataContext
+{
+    private CustomDbContext dbContext;
+
+    [StoredProcedureGenerated("persons_search")]
+    public partial Task<IList<Item>> GetResults(string name, string city);
+}
+```
