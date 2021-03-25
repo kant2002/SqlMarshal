@@ -281,16 +281,13 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
             if (parameter.RefKind == RefKind.Out || parameter.RefKind == RefKind.Ref)
             {
                 var parameterSqlDbType = GetParameterSqlDbType(parameter.Type);
-                source.Append($@"{parameter.Name}Parameter.DbType = {parameterSqlDbType};
-");
+                source.AppendLine($@"{parameter.Name}Parameter.DbType = {parameterSqlDbType};");
                 var direction = parameter.RefKind == RefKind.Out ? "System.Data.ParameterDirection.Output" : "System.Data.ParameterDirection.InputOutput";
-                source.Append($@"{parameter.Name}Parameter.Direction = {direction};
-");
+                source.AppendLine($@"{parameter.Name}Parameter.Direction = {direction};");
                 if (parameter.Type.SpecialType == SpecialType.System_String)
                 {
                     const int StringSize = 4000;
-                    source.Append($@"{parameter.Name}Parameter.Size = {StringSize};
-");
+                    source.AppendLine($@"{parameter.Name}Parameter.Size = {StringSize};");
                 }
             }
 
@@ -298,13 +295,33 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
             {
                 if (requireParameterNullCheck)
                 {
-                    source.Append($@"{parameter.Name}Parameter.Value = {parameter.Name} == null ? (object)DBNull.Value : {parameter.Name};
-");
+                    source.AppendLine($@"{parameter.Name}Parameter.Value = {parameter.Name} == null ? (object)DBNull.Value : {parameter.Name};");
                 }
                 else
                 {
-                    source.Append($@"{parameter.Name}Parameter.Value = {parameter.Name};
-");
+                    source.AppendLine($@"{parameter.Name}Parameter.Value = {parameter.Name};");
+                }
+            }
+        }
+
+        private static void MarshalOutputParameters(IndentedStringBuilder source, IEnumerable<IParameterSymbol> parameterSymbols, bool hasNullableAnnotations)
+        {
+            foreach (var parameter in parameterSymbols)
+            {
+                var requireReadOutput = parameter.RefKind == RefKind.Out || parameter.RefKind == RefKind.Ref;
+                if (!requireReadOutput)
+                {
+                    continue;
+                }
+
+                var requireParameterNullCheck = parameter.Type.CanHaveNullValue(hasNullableAnnotations);
+                if (requireParameterNullCheck)
+                {
+                    source.AppendLine($@"{parameter.Name} = {parameter.Name}Parameter.Value == DBNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;");
+                }
+                else
+                {
+                    source.AppendLine($@"{parameter.Name} = ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;");
                 }
             }
         }
@@ -461,14 +478,12 @@ namespace {namespaceName}
                 source.PushIndent();
                 foreach (var parameter in methodSymbol.Parameters)
                 {
-                    source.Append($@"{parameter.Name}Parameter,
-");
+                    source.AppendLine($@"{parameter.Name}Parameter,");
                 }
 
                 source.PopIndent();
-                source.Append(@"};
-
-");
+                source.AppendLine(@"};");
+                source.AppendLine();
             }
 
             if (methodSymbol.Parameters.Length == 0)
@@ -487,12 +502,10 @@ namespace {namespaceName}
             var requireDbCommandParameters = isScalarType || GetConnectionField(methodSymbol.ContainingType) != null;
             if (requireDbCommandParameters)
             {
-                source.Append($@"command.CommandText = sqlQuery;
-");
+                source.AppendLine($@"command.CommandText = sqlQuery;");
                 if (methodSymbol.Parameters.Length > 0)
                 {
-                    source.Append($@"command.Parameters.AddRange(parameters);
-");
+                    source.AppendLine($@"command.Parameters.AddRange(parameters);");
                 }
             }
 
@@ -512,24 +525,7 @@ namespace {namespaceName}
                     source.AppendLine($@"var result = command.ExecuteScalar();");
                 }
 
-                foreach (var parameter in methodSymbol.Parameters)
-                {
-                    var requireReadOutput = parameter.RefKind == RefKind.Out || parameter.RefKind == RefKind.Ref;
-                    if (!requireReadOutput)
-                    {
-                        continue;
-                    }
-
-                    var requireParameterNullCheck = parameter.Type.CanHaveNullValue(hasNullableAnnotations);
-                    if (requireParameterNullCheck)
-                    {
-                        source.AppendLine($@"{parameter.Name} = {parameter.Name}Parameter.Value == DBNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;");
-                    }
-                    else
-                    {
-                        source.AppendLine($@"{parameter.Name} = ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;");
-                    }
-                }
+                MarshalOutputParameters(source, methodSymbol.Parameters, hasNullableAnnotations);
 
                 if (returnType.SpecialType != SpecialType.System_Void)
                 {
@@ -553,31 +549,10 @@ namespace {namespaceName}
             }
             else
             {
-                source.Append($@"{this.MapResults(methodSymbol, itemType, isList)}
-");
-                foreach (var parameter in methodSymbol.Parameters)
-                {
-                    var requireReadOutput = parameter.RefKind == RefKind.Out || parameter.RefKind == RefKind.Ref;
-                    if (!requireReadOutput)
-                    {
-                        continue;
-                    }
+                source.AppendLine($@"{this.MapResults(methodSymbol, itemType, isList)}");
+                MarshalOutputParameters(source, methodSymbol.Parameters, hasNullableAnnotations);
 
-                    var requireParameterNullCheck = parameter.Type.CanHaveNullValue(hasNullableAnnotations);
-                    if (requireParameterNullCheck)
-                    {
-                        source.Append($@"{parameter.Name} = {parameter.Name}Parameter.Value == DBNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
-");
-                    }
-                    else
-                    {
-                        source.Append($@"{parameter.Name} = ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
-");
-                    }
-                }
-
-                source.Append($@"return result;
-");
+                source.AppendLine($@"return result;");
             }
 
             source.PopIndent();
