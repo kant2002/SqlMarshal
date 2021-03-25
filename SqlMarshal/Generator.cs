@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace StoredProcedureSourceGenerator
+namespace SqlMarshal
 {
     using System.Collections.Generic;
     using System.Linq;

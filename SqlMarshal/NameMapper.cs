@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace StoredProcedureSourceGenerator
+namespace SqlMarshal
 {
     using System.Linq;
     using System.Text.RegularExpressions;

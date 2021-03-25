@@ -4,11 +4,8 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace StoredProcedureSourceGenerator.Tests
+namespace SqlMarshal.Tests
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Text;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
 
     [TestClass]

@@ -4,7 +4,7 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace StoredProcedureSourceGenerator.Tests
+namespace SqlMarshal.Tests
 {
     using System;
     using System.Collections.Generic;
