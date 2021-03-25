@@ -393,7 +393,8 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
             bool isTask,
             ITypeSymbol returnType)
         {
-            if (returnType.SpecialType == SpecialType.System_Void)
+            var hasResult = returnType.SpecialType != SpecialType.System_Void && returnType.Name != "Task";
+            if (!hasResult)
             {
                 if (isTask)
                 {
@@ -418,7 +419,7 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
 
             MarshalOutputParameters(source, methodSymbol.Parameters, hasNullableAnnotations);
 
-            if (returnType.SpecialType != SpecialType.System_Void)
+            if (hasResult)
             {
                 source.AppendLine($@"return {MarshalValue("result", hasNullableAnnotations, returnType)};");
             }
@@ -533,32 +534,62 @@ namespace {namespaceName}
                     source.AppendLine("using var reader = command.ExecuteReader();");
                 }
 
-                source.AppendLine($@"var result = new List<{itemType.Name}>();");
-                if (isTask)
+                if (isList)
                 {
-                    source.AppendLine("while (await reader.ReadAsync())");
+                    source.AppendLine($@"var result = new List<{itemType.Name}>();");
+                    if (isTask)
+                    {
+                        source.AppendLine("while (await reader.ReadAsync())");
+                    }
+                    else
+                    {
+                        source.AppendLine("while (reader.Read())");
+                    }
+
+                    source.AppendLine("{");
+                    source.PushIndent();
+                    source.AppendLine($@"var item = new {itemType.Name}();");
+                    int i = 0;
+                    foreach (var propertyName in itemType.GetMembers().OfType<IPropertySymbol>())
+                    {
+                        var dataReaderMethodName = GetDataReaderMethod(propertyName.Type);
+                        source.AppendLine($@"var value_{i} = reader.GetValue({i});");
+                        source.AppendLine($@"item.{propertyName.Name} = {MarshalValue($"value_{i}", hasNullableAnnotations, propertyName.Type)};");
+                        i++;
+                    }
+
+                    source.AppendLine("result.Add(item);");
+                    source.PopIndent();
+                    source.AppendLine("}");
+                    source.AppendLine();
                 }
                 else
                 {
-                    source.AppendLine("while (reader.Read())");
-                }
+                    if (isTask)
+                    {
+                        source.AppendLine("if (!(await reader.ReadAsync()))");
+                    }
+                    else
+                    {
+                        source.AppendLine("if (!reader.Read())");
+                    }
 
-                source.AppendLine("{");
-                source.PushIndent();
-                source.AppendLine($@"var item = new {itemType.Name}();");
-                int i = 0;
-                foreach (var propertyName in itemType.GetMembers().OfType<IPropertySymbol>())
-                {
-                    var dataReaderMethodName = GetDataReaderMethod(propertyName.Type);
-                    source.AppendLine($@"var value_{i} = reader.GetValue({i});");
-                    source.AppendLine($@"item.{propertyName.Name} = {MarshalValue($"value_{i}", hasNullableAnnotations, propertyName.Type)};");
-                    i++;
+                    source.AppendLine("{");
+                    source.PushIndent();
+                    source.AppendLine("return null;");
+                    source.PopIndent();
+                    source.AppendLine("}");
+                    source.AppendLine();
+                    source.AppendLine($@"var result = new {itemType.Name}();");
+                    int i = 0;
+                    foreach (var propertyName in itemType.GetMembers().OfType<IPropertySymbol>())
+                    {
+                        var dataReaderMethodName = GetDataReaderMethod(propertyName.Type);
+                        source.AppendLine($@"var value_{i} = reader.GetValue({i});");
+                        source.AppendLine($@"result.{propertyName.Name} = {MarshalValue($"value_{i}", hasNullableAnnotations, propertyName.Type)};");
+                        i++;
+                    }
                 }
-
-                source.AppendLine("result.Add(item);");
-                source.PopIndent();
-                source.AppendLine("}");
-                source.AppendLine();
             }
             else
             {
@@ -642,7 +673,8 @@ namespace {namespaceName}
 
             var isList = itemType != returnType;
             var isScalarType = IsScalarType(GetUnderlyingType(returnType))
-                || returnType.SpecialType == SpecialType.System_Void;
+                || returnType.SpecialType == SpecialType.System_Void
+                || returnType.Name == "Task";
             bool useDbConnection = GetConnectionField(methodSymbol.ContainingType) != null;
             var requireDbCommandParameters = isScalarType || useDbConnection;
             if (requireDbCommandParameters)
