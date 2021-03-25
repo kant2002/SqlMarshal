@@ -25,9 +25,11 @@ Database connection can be used from the DbContext of DbConnection objects.
 - [Alternative options](#Alternative-options)
     - [Async methods](#Async-methods)
 
-# Temporary limitations
+# Temporary limitations or plans
 Current version of library has several limitation which not becasue it cannot be implemented reasonably,
-but because there was lack ot time to think through all options. So I list all current limitations, so any user would be aware
+but because there was lack ot time to think through all options. So I list all current limitations, so any user would be aware about them.
+I think about these options like about plan to implement them.
+
 - No ability to specify length of intput/output string parameters, or type `varchar`/`nvarchar`.
 - No ability execute custom SQL
 - Simplified ORM for just mapping object properties from DbDataReader
