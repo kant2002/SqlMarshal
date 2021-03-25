@@ -459,15 +459,31 @@ namespace {namespaceName}
             }
 
             var isList = itemType != returnType;
-            if (IsScalarType(returnType))
+            if (IsScalarType(returnType) || returnType.SpecialType == SpecialType.System_Void)
             {
                 source.Append($@"            command.CommandText = sqlQuery;
-            command.Parameters.AddRange(parameters);
-            {this.GetOpenConnectionStatement(methodSymbol.ContainingType)}
+");
+                if (methodSymbol.Parameters.Length > 0)
+                {
+                    source.Append($@"            command.Parameters.AddRange(parameters);
+");
+                }
+
+                source.Append($@"            {this.GetOpenConnectionStatement(methodSymbol.ContainingType)}
             try
             {{
-                var result = command.ExecuteScalar();
 ");
+                if (returnType.SpecialType == SpecialType.System_Void)
+                {
+                    source.Append($@"                command.ExecuteNonQuery();
+");
+                }
+                else
+                {
+                    source.Append($@"                var result = command.ExecuteScalar();
+");
+                }
+
                 foreach (var parameter in methodSymbol.Parameters)
                 {
                     var requireReadOutput = parameter.RefKind == RefKind.Out || parameter.RefKind == RefKind.Ref;
@@ -489,8 +505,13 @@ namespace {namespaceName}
                     }
                 }
 
-                source.Append($@"                return ({returnType.ToDisplayString()})result;
-            }}
+                if (returnType.SpecialType != SpecialType.System_Void)
+                {
+                    source.Append($@"                return ({returnType.ToDisplayString()})result;
+");
+                }
+
+                source.Append($@"            }}
             finally
             {{
                 {this.GetCloseConnectionStatement(methodSymbol.ContainingType)}
