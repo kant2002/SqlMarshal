@@ -32,6 +32,7 @@ but because there was lack ot time to think through all options. So I list all c
 - No ability execute custom SQL
 - Simplified ORM for just mapping object properties from DbDataReader
 - Ability to specify fields in code in the order different then returned from SQL.
+- Automatic generation of DbSet<T> inside DbContext, since when working with stored procedures this is most likely burden.
 
 ## DbConnection examples
 
