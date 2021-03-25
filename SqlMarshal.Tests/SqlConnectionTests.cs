@@ -74,16 +74,8 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            this.connection.Open();
-            try
-            {
-                var result = command.ExecuteScalar();
-                return (int)result;
-            }
-            finally
-            {
-                this.connection.Close();
-            }
+            var result = command.ExecuteScalar();
+            return (int)result;
         }
     }
 }";
@@ -148,17 +140,9 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id OUTPUT"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            this.connection.Open();
-            try
-            {
-                var result = command.ExecuteScalar();
-                personId = (int)personIdParameter.Value;
-                return (int)result;
-            }
-            finally
-            {
-                this.connection.Close();
-            }
+            var result = command.ExecuteScalar();
+            personId = (int)personIdParameter.Value;
+            return (int)result;
         }
     }
 }";

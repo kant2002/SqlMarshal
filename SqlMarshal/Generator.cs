@@ -326,6 +326,32 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
             }
         }
 
+        private static void ExecuteSimpleQuery(IndentedStringBuilder source, IMethodSymbol methodSymbol, bool hasNullableAnnotations, ITypeSymbol returnType)
+        {
+            if (returnType.SpecialType == SpecialType.System_Void)
+            {
+                source.AppendLine($@"command.ExecuteNonQuery();");
+            }
+            else
+            {
+                source.AppendLine($@"var result = command.ExecuteScalar();");
+            }
+
+            MarshalOutputParameters(source, methodSymbol.Parameters, hasNullableAnnotations);
+
+            if (returnType.SpecialType != SpecialType.System_Void)
+            {
+                if (returnType.CanHaveNullValue(hasNullableAnnotations))
+                {
+                    source.AppendLine($@"return result == DBNull.Value ? ({returnType.ToDisplayString()})null : ({GetUnderlyingType(returnType).ToDisplayString()})result;");
+                }
+                else
+                {
+                    source.AppendLine($@"return ({returnType.ToDisplayString()})result;");
+                }
+            }
+        }
+
         private string? ProcessClass(
             INamedTypeSymbol classSymbol,
             List<IMethodSymbol> methods,
@@ -478,11 +504,11 @@ namespace {namespaceName}
                 source.PushIndent();
                 foreach (var parameter in methodSymbol.Parameters)
                 {
-                    source.AppendLine($@"{parameter.Name}Parameter,");
+                    source.AppendLine($"{parameter.Name}Parameter,");
                 }
 
                 source.PopIndent();
-                source.AppendLine(@"};");
+                source.AppendLine("};");
                 source.AppendLine();
             }
 
@@ -499,7 +525,8 @@ namespace {namespaceName}
             var isList = itemType != returnType;
             var isScalarType = IsScalarType(GetUnderlyingType(returnType))
                 || returnType.SpecialType == SpecialType.System_Void;
-            var requireDbCommandParameters = isScalarType || GetConnectionField(methodSymbol.ContainingType) != null;
+            bool useDbConnection = GetConnectionField(methodSymbol.ContainingType) != null;
+            var requireDbCommandParameters = isScalarType || useDbConnection;
             if (requireDbCommandParameters)
             {
                 source.AppendLine($@"command.CommandText = sqlQuery;");
@@ -511,41 +538,27 @@ namespace {namespaceName}
 
             if (isScalarType)
             {
-                source.Append($@"{this.GetOpenConnectionStatement(methodSymbol.ContainingType)}
-            try
-            {{
-");
-                source.PushIndent();
-                if (returnType.SpecialType == SpecialType.System_Void)
+                if (useDbConnection)
                 {
-                    source.AppendLine($@"command.ExecuteNonQuery();");
+                    ExecuteSimpleQuery(source, methodSymbol, hasNullableAnnotations, returnType);
                 }
                 else
                 {
-                    source.AppendLine($@"var result = command.ExecuteScalar();");
-                }
+                    source.Append($@"{this.GetOpenConnectionStatement(methodSymbol.ContainingType)}
+            try
+            {{
+");
+                    source.PushIndent();
+                    ExecuteSimpleQuery(source, methodSymbol, hasNullableAnnotations, returnType);
 
-                MarshalOutputParameters(source, methodSymbol.Parameters, hasNullableAnnotations);
-
-                if (returnType.SpecialType != SpecialType.System_Void)
-                {
-                    if (returnType.CanHaveNullValue(hasNullableAnnotations))
-                    {
-                        source.AppendLine($@"return result == DBNull.Value ? ({returnType.ToDisplayString()})null : ({GetUnderlyingType(returnType).ToDisplayString()})result;");
-                    }
-                    else
-                    {
-                        source.AppendLine($@"return ({returnType.ToDisplayString()})result;");
-                    }
-                }
-
-                source.PopIndent();
-                source.Append($@"}}
+                    source.PopIndent();
+                    source.Append($@"}}
             finally
             {{
                 {this.GetCloseConnectionStatement(methodSymbol.ContainingType)}
             }}
 ");
+                }
             }
             else
             {
