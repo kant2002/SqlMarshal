@@ -24,9 +24,11 @@ Database connection can be used from the DbContext of DbConnection objects.
     - [INSERT or UPDATE](#Without-results-1)
 - [Alternative options](#Alternative-options)
     - [Async methods](#Async-methods)
+    - [Nullable parameters](#Nullable-parameters)
+    - [Bidirectional parameters](#Bidirectional-parameters)
 
 # Temporary limitations or plans
-Current version of library has several limitation which not becasue it cannot be implemented reasonably,
+Current version of library has several limitation which not because it cannot be implemented reasonably,
 but because there was lack ot time to think through all options. So I list all current limitations, so any user would be aware about them.
 I think about these options like about plan to implement them.
 
@@ -237,5 +239,35 @@ public partial class DataContext
 
     [StoredProcedureGenerated("persons_search")]
     public partial Task<IList<Item>> GetResults(string name, string city);
+}
+```
+
+### Nullable parameters
+
+The codegen honor nullable parameters. If you specify paramter as non-nullable, it would not work with NULL values in the database,
+if you specify that null allowed, it properly convert NULL to null values in C#.
+
+```
+public partial class DataContext
+{
+    private DbConnection connection;
+
+    [StoredProcedureGenerated("get_error_message")]
+    public partial string? GetErrorMessage(int? clientId);
+}
+```
+
+### Bidirectional parameters
+
+If you have parameters which act as input and output parameters, you can specify them as `ref` values.
+Codegen read values after SQL was executed.
+
+```
+public partial class DataContext
+{
+    private DbConnection connection;
+
+    [StoredProcedureGenerated("get_error_message")]
+    public partial string? GetErrorMessage(ref int? clientId);
 }
 ```
