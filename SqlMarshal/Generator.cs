@@ -273,6 +273,47 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
             }
         }
 
+        private static string GetDataReaderMethod(ITypeSymbol type)
+        {
+            if (type is INamedTypeSymbol namedTypeSymbol)
+            {
+                if (type.Name == "Nullable")
+                {
+                    return GetParameterSqlDbType(namedTypeSymbol.TypeArguments[0]);
+                }
+            }
+
+            switch (type.SpecialType)
+            {
+                case SpecialType.System_String:
+                    return "GetString";
+                case SpecialType.System_Byte:
+                    return "GetByte";
+                case SpecialType.System_SByte:
+                    return "GetSByte";
+                case SpecialType.System_Int16:
+                    return "GetInt16";
+                case SpecialType.System_Int32:
+                    return "GetInt32";
+                case SpecialType.System_Int64:
+                    return "GetInt64";
+                case SpecialType.System_UInt16:
+                    return "GetUInt16";
+                case SpecialType.System_UInt32:
+                    return "GetUInt32";
+                case SpecialType.System_UInt64:
+                    return "GetUInt64";
+                case SpecialType.System_Single:
+                    return "GetSingle";
+                case SpecialType.System_Double:
+                    return "GetDouble";
+                case SpecialType.System_DateTime:
+                    return "GetDateTime2";
+                default:
+                    throw new System.NotImplementedException();
+            }
+        }
+
         private static void DeclareParameter(IndentedStringBuilder source, bool hasNullableAnnotations, IParameterSymbol parameter)
         {
             var requireParameterNullCheck = parameter.Type.CanHaveNullValue(hasNullableAnnotations);
@@ -452,27 +493,44 @@ namespace {namespaceName}
             return $"this.{contextName}.Database.CloseConnection();";
         }
 
-        private string MapResults(IMethodSymbol methodSymbol, ITypeSymbol itemType, bool isList)
+        private void MapResults(
+            IndentedStringBuilder source,
+            IMethodSymbol methodSymbol,
+            ITypeSymbol itemType,
+            bool hasNullableAnnotations,
+            bool isList)
         {
             var classSymbol = methodSymbol.ContainingType;
             var connectionSymbol = GetConnectionField(classSymbol);
             if (connectionSymbol != null)
             {
-                return $@"using var reader = command.ExecuteReader();
-            var result = new List<{itemType.Name}>();
-            while (reader.Read())
-            {{
-                var item = new {itemType.Name}();
-                item.Value = reader.GetString(0);
-                result.Add(item);
-            }}
-";
-            }
+                source.AppendLine("using var reader = command.ExecuteReader();");
+                source.AppendLine($@"var result = new List<{itemType.Name}>();");
+                source.AppendLine("while (reader.Read())");
+                source.AppendLine("{");
+                source.PushIndent();
+                source.AppendLine($@"var item = new {itemType.Name}();");
+                int i = 0;
+                foreach (var propertyName in itemType.GetMembers().OfType<IPropertySymbol>())
+                {
+                    var dataReaderMethodName = GetDataReaderMethod(propertyName.Type);
+                    source.AppendLine($@"var value_{i} = reader.GetValue({i});");
+                    source.AppendLine($@"item.{propertyName.Name} = {MarshalValue($"value_{i}", hasNullableAnnotations, propertyName.Type)};");
+                    i++;
+                }
 
-            var dbContextSymbol = GetContextField(classSymbol);
-            var contextName = dbContextSymbol?.Name ?? "dbContext";
-            var itemTypeProperty = GetDbSetField(dbContextSymbol, itemType)?.Name ?? itemType.Name + "s";
-            return $"var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(methodSymbol.Parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToList" : "AsEnumerable().FirstOrDefault")}();";
+                source.AppendLine("result.Add(item);");
+                source.PopIndent();
+                source.AppendLine("}");
+                source.AppendLine();
+            }
+            else
+            {
+                var dbContextSymbol = GetContextField(classSymbol);
+                var contextName = dbContextSymbol?.Name ?? "dbContext";
+                var itemTypeProperty = GetDbSetField(dbContextSymbol, itemType)?.Name ?? itemType.Name + "s";
+                source.AppendLine($"var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(methodSymbol.Parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToList" : "AsEnumerable().FirstOrDefault")}();");
+            }
         }
 
         private void ProcessMethod(
@@ -574,7 +632,7 @@ namespace {namespaceName}
             }
             else
             {
-                source.AppendLine($@"{this.MapResults(methodSymbol, itemType, isList)}");
+                this.MapResults(source, methodSymbol, itemType, hasNullableAnnotations, isList);
                 MarshalOutputParameters(source, methodSymbol.Parameters, hasNullableAnnotations);
                 source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
             }
