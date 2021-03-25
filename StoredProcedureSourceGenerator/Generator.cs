@@ -286,6 +286,12 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
                 var direction = parameter.RefKind == RefKind.Out ? "System.Data.ParameterDirection.Output" : "System.Data.ParameterDirection.InputOutput";
                 source.Append($@"            {parameter.Name}Parameter.Direction = {direction};
 ");
+                if (parameter.Type.SpecialType == SpecialType.System_String)
+                {
+                    const int StringSize = 4000;
+                    source.Append($@"            {parameter.Name}Parameter.Size = {StringSize};
+");
+                }
             }
 
             if (parameter.RefKind == RefKind.None || parameter.RefKind == RefKind.Ref)
@@ -461,7 +467,29 @@ namespace {namespaceName}
             try
             {{
                 var result = command.ExecuteScalar();
-                return ({returnType.ToDisplayString()})result;
+");
+                foreach (var parameter in methodSymbol.Parameters)
+                {
+                    var requireReadOutput = parameter.RefKind == RefKind.Out || parameter.RefKind == RefKind.Ref;
+                    if (!requireReadOutput)
+                    {
+                        continue;
+                    }
+
+                    var requireParameterNullCheck = parameter.Type.CanHaveNullValue(hasNullableAnnotations);
+                    if (requireParameterNullCheck)
+                    {
+                        source.Append($@"                {parameter.Name} = {parameter.Name}Parameter.Value == DbNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
+");
+                    }
+                    else
+                    {
+                        source.Append($@"                {parameter.Name} = ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;
+");
+                    }
+                }
+
+                source.Append($@"                return ({returnType.ToDisplayString()})result;
             }}
             finally
             {{
