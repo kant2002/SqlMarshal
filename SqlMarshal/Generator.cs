@@ -386,15 +386,34 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
             }
         }
 
-        private static void ExecuteSimpleQuery(IndentedStringBuilder source, IMethodSymbol methodSymbol, bool hasNullableAnnotations, ITypeSymbol returnType)
+        private static void ExecuteSimpleQuery(
+            IndentedStringBuilder source,
+            IMethodSymbol methodSymbol,
+            bool hasNullableAnnotations,
+            bool isTask,
+            ITypeSymbol returnType)
         {
             if (returnType.SpecialType == SpecialType.System_Void)
             {
-                source.AppendLine($@"command.ExecuteNonQuery();");
+                if (isTask)
+                {
+                    source.AppendLine($@"await command.ExecuteNonQueryAsync();");
+                }
+                else
+                {
+                    source.AppendLine($@"command.ExecuteNonQuery();");
+                }
             }
             else
             {
-                source.AppendLine($@"var result = command.ExecuteScalar();");
+                if (isTask)
+                {
+                    source.AppendLine($@"var result = await command.ExecuteScalarAsync();");
+                }
+                else
+                {
+                    source.AppendLine($@"var result = command.ExecuteScalar();");
+                }
             }
 
             MarshalOutputParameters(source, methodSymbol.Parameters, hasNullableAnnotations);
@@ -498,15 +517,32 @@ namespace {namespaceName}
             IMethodSymbol methodSymbol,
             ITypeSymbol itemType,
             bool hasNullableAnnotations,
-            bool isList)
+            bool isList,
+            bool isTask)
         {
             var classSymbol = methodSymbol.ContainingType;
             var connectionSymbol = GetConnectionField(classSymbol);
             if (connectionSymbol != null)
             {
-                source.AppendLine("using var reader = command.ExecuteReader();");
+                if (isTask)
+                {
+                    source.AppendLine("using var reader = await command.ExecuteReaderAsync();");
+                }
+                else
+                {
+                    source.AppendLine("using var reader = command.ExecuteReader();");
+                }
+
                 source.AppendLine($@"var result = new List<{itemType.Name}>();");
-                source.AppendLine("while (reader.Read())");
+                if (isTask)
+                {
+                    source.AppendLine("while (await reader.ReadAsync())");
+                }
+                else
+                {
+                    source.AppendLine("while (reader.Read())");
+                }
+
                 source.AppendLine("{");
                 source.PushIndent();
                 source.AppendLine($@"var item = new {itemType.Name}();");
@@ -543,6 +579,11 @@ namespace {namespaceName}
             string fieldName = methodSymbol.Name;
             ITypeSymbol returnType = methodSymbol.ReturnType;
             var symbol = (ISymbol)methodSymbol;
+            var isTask = returnType.Name == "Task";
+            if (isTask)
+            {
+                returnType = GetUnderlyingType(returnType);
+            }
 
             // get the AutoNotify attribute from the field, and any associated data
             AttributeData attributeData = methodSymbol.GetAttributes().Single(ad => ad.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default));
@@ -551,7 +592,7 @@ namespace {namespaceName}
             var signature = $"({string.Join(", ", methodSymbol.Parameters.Select(_ => GetParameterDeclaration(_)))})";
             var itemType = GetUnderlyingType(returnType);
             var getConnection = this.GetConnectionStatement(methodSymbol.ContainingType);
-            source.Append($@"        {GetAccessibility(symbol.DeclaredAccessibility)} partial {returnType} {methodSymbol.Name}{signature}
+            source.Append($@"        {GetAccessibility(symbol.DeclaredAccessibility)} partial {(isTask ? "async " : string.Empty)}{methodSymbol.ReturnType} {methodSymbol.Name}{signature}
         {{
             {getConnection}
             using var command = connection.CreateCommand();
@@ -610,7 +651,7 @@ namespace {namespaceName}
             {
                 if (useDbConnection)
                 {
-                    ExecuteSimpleQuery(source, methodSymbol, hasNullableAnnotations, returnType);
+                    ExecuteSimpleQuery(source, methodSymbol, hasNullableAnnotations, isTask, returnType);
                 }
                 else
                 {
@@ -619,7 +660,7 @@ namespace {namespaceName}
             {{
 ");
                     source.PushIndent();
-                    ExecuteSimpleQuery(source, methodSymbol, hasNullableAnnotations, returnType);
+                    ExecuteSimpleQuery(source, methodSymbol, hasNullableAnnotations, isTask, returnType);
 
                     source.PopIndent();
                     source.Append($@"}}
@@ -632,7 +673,7 @@ namespace {namespaceName}
             }
             else
             {
-                this.MapResults(source, methodSymbol, itemType, hasNullableAnnotations, isList);
+                this.MapResults(source, methodSymbol, itemType, hasNullableAnnotations, isList, isTask);
                 MarshalOutputParameters(source, methodSymbol.Parameters, hasNullableAnnotations);
                 source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
             }
