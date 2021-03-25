@@ -12,6 +12,7 @@ namespace SqlMarshal
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp.Syntax;
     using Microsoft.CodeAnalysis.Text;
+    using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
     /// <summary>
     /// Stored procedures generator.
@@ -314,15 +315,33 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
                     continue;
                 }
 
-                var requireParameterNullCheck = parameter.Type.CanHaveNullValue(hasNullableAnnotations);
-                if (requireParameterNullCheck)
-                {
-                    source.AppendLine($@"{parameter.Name} = {parameter.Name}Parameter.Value == DBNull.Value ? ({parameter.Type.ToDisplayString()})null : ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;");
-                }
-                else
-                {
-                    source.AppendLine($@"{parameter.Name} = ({parameter.Type.ToDisplayString()}){parameter.Name}Parameter.Value;");
-                }
+                source.AppendLine($@"{parameter.Name} = {MarshalValue($"{parameter.Name}Parameter.Value", hasNullableAnnotations, parameter.Type)};");
+            }
+        }
+
+        private static string MarshalValue(string identifier, bool hasNullableAnnotations, ITypeSymbol returnType)
+        {
+            if (returnType.CanHaveNullValue(hasNullableAnnotations))
+            {
+                var nonNullExpression = CastExpression(
+                    ParseTypeName(GetUnderlyingType(returnType).ToDisplayString()),
+                    IdentifierName(identifier));
+                var nullExpression = CastExpression(
+                    ParseTypeName(returnType.ToDisplayString()),
+                    LiteralExpression(Microsoft.CodeAnalysis.CSharp.SyntaxKind.NullLiteralExpression));
+                var mappingExpression = ConditionalExpression(
+                    BinaryExpression(Microsoft.CodeAnalysis.CSharp.SyntaxKind.EqualsExpression, IdentifierName(identifier), MemberAccessExpression(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SimpleMemberAccessExpression, IdentifierName("DBNull"), IdentifierName("Value"))),
+                    nullExpression,
+                    nonNullExpression);
+
+                // return mappingExpression.NormalizeWhitespace().ToFullString();
+                return $@"{identifier} == DBNull.Value ? ({returnType.ToDisplayString()})null : ({GetUnderlyingType(returnType).ToDisplayString()}){identifier}";
+            }
+            else
+            {
+                return CastExpression(
+                    ParseTypeName(returnType.ToDisplayString()),
+                    IdentifierName(identifier)).NormalizeWhitespace().ToFullString();
             }
         }
 
@@ -341,14 +360,7 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
 
             if (returnType.SpecialType != SpecialType.System_Void)
             {
-                if (returnType.CanHaveNullValue(hasNullableAnnotations))
-                {
-                    source.AppendLine($@"return result == DBNull.Value ? ({returnType.ToDisplayString()})null : ({GetUnderlyingType(returnType).ToDisplayString()})result;");
-                }
-                else
-                {
-                    source.AppendLine($@"return ({returnType.ToDisplayString()})result;");
-                }
+                source.AppendLine($@"return {MarshalValue("result", hasNullableAnnotations, returnType)};");
             }
         }
 
@@ -564,8 +576,7 @@ namespace {namespaceName}
             {
                 source.AppendLine($@"{this.MapResults(methodSymbol, itemType, isList)}");
                 MarshalOutputParameters(source, methodSymbol.Parameters, hasNullableAnnotations);
-
-                source.AppendLine($@"return result;");
+                source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
             }
 
             source.PopIndent();

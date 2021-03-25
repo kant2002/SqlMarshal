@@ -553,7 +553,7 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id OUTPUT"";
             var result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
-            personId = personIdParameter.Value == DBNull.Value ? (int?)null : (int?)personIdParameter.Value;
+            personId = personIdParameter.Value == DBNull.Value ? (int?)null : (int)personIdParameter.Value;
             return result;
         }
     }
