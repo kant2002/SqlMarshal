@@ -8,9 +8,9 @@ Database connection can be used from the DbContext of DbConnection objects.
 
 # Examples
 
-- [DbConnection examples](DbConnection examples)
+- [DbConnection examples]
     - [Stored procedures which returns resultset](Stored procedures which returns resultset)
-- [DbContext examples](DbContext examples)
+- (DbContext examples)[DbContext examples]
     - [Stored procedures which returns resultset](Stored procedures which returns resultset)
     - Adding parameters
     - Output parameters
