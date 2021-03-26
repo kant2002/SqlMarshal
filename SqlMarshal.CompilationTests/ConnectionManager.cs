@@ -22,6 +22,6 @@ namespace SqlMarshal.CompilationTests
         public partial IList<PersonInformation> GetResult();
 
         [StoredProcedureGenerated("persons_by_page")]
-        public partial IList<PersonInformation> GetResultByPage(int pageSize, out int totalCount);
+        public partial IList<PersonInformation> GetResultByPage(int pageNo, out int totalCount);
     }
 }
