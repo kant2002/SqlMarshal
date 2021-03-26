@@ -35,6 +35,12 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
 
     public string StoredProcedureName { get; }
 }
+
+[System.AttributeUsage(System.AttributeTargets.Parameter, AllowMultiple=false)]
+internal sealed class CustomSqlAttribute: System.Attribute
+{
+    public CustomSqlAttribute() {}
+}
 ";
 
         /// <inheritdoc/>
@@ -533,6 +539,7 @@ namespace {namespaceName}
         private void MapResults(
             IndentedStringBuilder source,
             IMethodSymbol methodSymbol,
+            System.Collections.Immutable.ImmutableArray<IParameterSymbol> parameters,
             ITypeSymbol itemType,
             bool hasNullableAnnotations,
             bool isList,
@@ -632,11 +639,11 @@ namespace {namespaceName}
                 var itemTypeProperty = GetDbSetField(dbContextSymbol, itemType)?.Name ?? itemType.Name + "s";
                 if (isTask)
                 {
-                    source.AppendLine($"var result = await this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(methodSymbol.Parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToListAsync" : "AsEnumerable().FirstOrDefaultAsync")}();");
+                    source.AppendLine($"var result = await this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToListAsync" : "AsEnumerable().FirstOrDefaultAsync")}();");
                 }
                 else
                 {
-                    source.AppendLine($"var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(methodSymbol.Parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToList" : "AsEnumerable().FirstOrDefault")}();");
+                    source.AppendLine($"var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToList" : "AsEnumerable().FirstOrDefault")}();");
                 }
             }
         }
@@ -660,8 +667,29 @@ namespace {namespaceName}
             // get the AutoNotify attribute from the field, and any associated data
             AttributeData attributeData = methodSymbol.GetAttributes().Single(ad => ad.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default));
             TypedConstant overridenNameOpt = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "PropertyName").Value;
-            var procedureName = attributeData.ConstructorArguments.ElementAtOrDefault(0);
-            var signature = $"({string.Join(", ", methodSymbol.Parameters.Select(_ => GetParameterDeclaration(_)))})";
+            var procedureNameConstraint = attributeData.ConstructorArguments.ElementAtOrDefault(0);
+            object? procedureName = procedureNameConstraint.Value;
+            var parameters = methodSymbol.Parameters;
+            var originalParameters = methodSymbol.Parameters;
+            bool hasCustomSql = false;
+            IParameterSymbol? customSqlParameter = null;
+            foreach (var parameter in parameters)
+            {
+                var customSqlAttributeCandidate = parameter.GetAttributes().FirstOrDefault(_ => _.AttributeClass?.Name == "CustomSqlAttribute");
+                if (customSqlAttributeCandidate != null)
+                {
+                    customSqlParameter = parameter;
+                    hasCustomSql = true;
+                    break;
+                }
+            }
+
+            if (hasCustomSql)
+            {
+                parameters = parameters.Remove(customSqlParameter!);
+            }
+
+            var signature = $"({string.Join(", ", originalParameters.Select(_ => GetParameterDeclaration(_)))})";
             var itemType = GetUnderlyingType(returnType);
             var getConnection = this.GetConnectionStatement(methodSymbol.ContainingType);
             source.Append($@"        {GetAccessibility(symbol.DeclaredAccessibility)} partial {(isTask ? "async " : string.Empty)}{methodSymbol.ReturnType} {methodSymbol.Name}{signature}
@@ -673,9 +701,9 @@ namespace {namespaceName}
             source.PushIndent();
             source.PushIndent();
             source.PushIndent();
-            if (methodSymbol.Parameters.Length > 0)
+            if (parameters.Length > 0)
             {
-                foreach (var parameter in methodSymbol.Parameters)
+                foreach (var parameter in parameters)
                 {
                     DeclareParameter(source, hasNullableAnnotations, parameter);
                     source.AppendLine();
@@ -685,7 +713,7 @@ namespace {namespaceName}
             {{
 ");
                 source.PushIndent();
-                foreach (var parameter in methodSymbol.Parameters)
+                foreach (var parameter in parameters)
                 {
                     source.AppendLine($"{parameter.Name}Parameter,");
                 }
@@ -695,14 +723,17 @@ namespace {namespaceName}
                 source.AppendLine();
             }
 
-            if (methodSymbol.Parameters.Length == 0)
+            if (!hasCustomSql)
             {
-                source.AppendLine($@"var sqlQuery = @""{procedureName.Value}"";");
-            }
-            else
-            {
-                string parametersList = string.Join(", ", methodSymbol.Parameters.Select(parameter => GetParameterPassing(parameter)));
-                source.AppendLine($@"var sqlQuery = @""{procedureName.Value} {parametersList}"";");
+                if (parameters.Length == 0)
+                {
+                    source.AppendLine($@"var sqlQuery = @""{procedureName}"";");
+                }
+                else
+                {
+                    string parametersList = string.Join(", ", parameters.Select(parameter => GetParameterPassing(parameter)));
+                    source.AppendLine($@"var sqlQuery = @""{procedureName} {parametersList}"";");
+                }
             }
 
             var isList = itemType != returnType;
@@ -713,8 +744,16 @@ namespace {namespaceName}
             var requireDbCommandParameters = isScalarType || useDbConnection;
             if (requireDbCommandParameters)
             {
-                source.AppendLine($@"command.CommandText = sqlQuery;");
-                if (methodSymbol.Parameters.Length > 0)
+                if (!hasCustomSql)
+                {
+                    source.AppendLine($@"command.CommandText = sqlQuery;");
+                }
+                else
+                {
+                    source.AppendLine($@"command.CommandText = {customSqlParameter!.Name};");
+                }
+
+                if (parameters.Length > 0)
                 {
                     source.AppendLine($@"command.Parameters.AddRange(parameters);");
                 }
@@ -746,8 +785,8 @@ namespace {namespaceName}
             }
             else
             {
-                this.MapResults(source, methodSymbol, itemType, hasNullableAnnotations, isList, isTask);
-                MarshalOutputParameters(source, methodSymbol.Parameters, hasNullableAnnotations);
+                this.MapResults(source, methodSymbol, parameters, itemType, hasNullableAnnotations, isList, isTask);
+                MarshalOutputParameters(source, parameters, hasNullableAnnotations);
                 source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
             }
 
