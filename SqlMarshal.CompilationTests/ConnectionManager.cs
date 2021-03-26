@@ -25,6 +25,6 @@ namespace SqlMarshal.CompilationTests
         public partial IList<PersonInformation> GetResultByPage(int pageNo, out int totalCount);
 
         [SqlMarshal("")]
-        public partial IList<PersonInformation> GetResultFromSql([CustomSql]string sql, int maxId);
+        public partial IList<PersonInformation> GetResultFromSql([RawSql]string sql, int maxId);
     }
 }
