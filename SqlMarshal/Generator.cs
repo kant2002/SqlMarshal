@@ -97,6 +97,7 @@ internal sealed class CustomSqlAttribute: System.Attribute
             {
                 Accessibility.Public => "public",
                 Accessibility.Friend => "internal",
+                Accessibility.Private => "private",
                 _ => string.Empty,
             };
         }
@@ -177,6 +178,11 @@ internal sealed class CustomSqlAttribute: System.Attribute
                 {
                     return memberSymbol;
                 }
+            }
+
+            if (classSymbol.BaseType != null)
+            {
+                return GetConnectionField(classSymbol.BaseType);
             }
 
             return null;
