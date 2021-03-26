@@ -212,6 +212,7 @@ namespace Foo
                 result.Add(item);
             }
 
+            await reader.CloseAsync();
             return result;
         }
     }
@@ -328,6 +329,7 @@ namespace Foo
             result.Int32Value = (int)value_1;
             var value_2 = reader.GetValue(2);
             result.NullableInt32Value = value_2 == DBNull.Value ? (int?)null : (int)value_2;
+            await reader.CloseAsync();
             return result;
         }
     }

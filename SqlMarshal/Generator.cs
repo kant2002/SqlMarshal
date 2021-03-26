@@ -579,6 +579,14 @@ namespace {namespaceName}
                     source.PopIndent();
                     source.AppendLine("}");
                     source.AppendLine();
+                    if (isTask)
+                    {
+                        source.AppendLine("await reader.CloseAsync();");
+                    }
+                    else
+                    {
+                        source.AppendLine("reader.Close();");
+                    }
                 }
                 else
                 {
@@ -605,6 +613,15 @@ namespace {namespaceName}
                         source.AppendLine($@"var value_{i} = reader.GetValue({i});");
                         source.AppendLine($@"result.{propertyName.Name} = {MarshalValue($"value_{i}", hasNullableAnnotations, propertyName.Type)};");
                         i++;
+                    }
+
+                    if (isTask)
+                    {
+                        source.AppendLine("await reader.CloseAsync();");
+                    }
+                    else
+                    {
+                        source.AppendLine("reader.Close();");
                     }
                 }
             }
