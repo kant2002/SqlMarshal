@@ -5,7 +5,7 @@ SqlMarshal
 
 NativeAOT-friendly mini-ORM which care about nullability checks.
 
-This project generates typed functions for accessing custom SQL and sstored procedures. Goal of this project to be AOT friendly.
+This project generates typed functions for accessing custom SQL and stored procedures. Goal of this project to be AOT friendly.
 Database connection can be used from the DbContext of DbConnection objects.
 
 # Examples
@@ -31,12 +31,11 @@ Database connection can be used from the DbContext of DbConnection objects.
     - [Bidirectional parameters](#Bidirectional-parameters)
 
 # Temporary limitations or plans
-Current version of library has several limitation which not because it cannot be implemented reasonably,
-but because there was lack ot time to think through all options. So I list all current limitations, so any user would be aware about them.
+Current version of library has several limitations which not because it cannot be implemented reasonably,
+but because there was lack of time to think through all options. So I list all current limitations, so any user would be aware about them.
 I think about these options like about plan to implement them.
 
-- No ability to specify length of intput/output string parameters, or type `varchar`/`nvarchar`.
-- No ability execute custom SQL
+- No ability to specify length of input/output string parameters, or type `varchar`/`nvarchar`.
 - Simplified ORM for just mapping object properties from DbDataReader
 - Ability to specify fields in code in the order different then returned from SQL.
 - Automatic generation of DbSet<T> inside DbContext, since when working with stored procedures this is most likely burden.
@@ -44,7 +43,7 @@ I think about these options like about plan to implement them.
 
 ## Managing connections
 
-Generated code do not interfere in the connection opening, closing process. It is responsibility of developer to properly wrap code in the transaction and open connections.
+Generated code does not interfere with the connection opening and closing. It is responsibility of developer to properly wrap code in the transaction and open connections.
 
 ```
 public partial class DataContext
@@ -82,7 +81,7 @@ In the repository located sample application which I use for testing, but they c
 
 ## Performance
 
-Now I only hope (becasue no measurements yet) that performance would be on par with [Dapper](https://github.com/StackExchange/Dapper) or better.
+Now I only hope (because no measurements yet) that performance would be on par with [Dapper](https://github.com/StackExchange/Dapper) or better.
 At least right now generated code is visible and can be reason about.
 
 ## DbConnection examples
@@ -100,8 +99,8 @@ public partial class DataContext
 ```
 
 This code translated to `EXEC persons_list`.
-When generated code retreive data reader it starts iterate properties in the `Item` class in the
-same order as they are declared and read values from the row. Order different then declaration order do not supported now.
+When generated code retrieve data reader it starts iterating properties in the `Item` class in the
+same order as they are declared and read values from the row. Order different then declaration order not supported now.
 
 ### Adding parameters
 
@@ -119,7 +118,7 @@ This code translated to `EXEC persons_search @name, @city`. Generated code do no
 
 ### Executing SQL
 
-If stored procedure seems to be overkill, then you can add string parameter with attibute [RawSql]
+If stored procedure seems to be overkill, then you can add string parameter with attribute [RawSql]
 and SQL passed to the function would be executed.
 
 ```
@@ -306,7 +305,7 @@ public partial class DataContext
 
 ### Nullable parameters
 
-The codegen honor nullable parameters. If you specify paramter as non-nullable, it would not work with NULL values in the database,
+The codegen honor nullable parameters. If you specify parameter as non-nullable, it will not work with NULL values in the database,
 if you specify that null allowed, it properly convert NULL to null values in C#.
 
 ```
