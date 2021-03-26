@@ -25,7 +25,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial IList<Item> M()
     }
 }";
@@ -72,7 +72,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial Item M()
     }
 }";
@@ -119,7 +119,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial IList<Item> M(string clientId, string personId)
     }
 }";
@@ -186,7 +186,7 @@ namespace Foo
     {
         private readonly CustomDbContext context;
 
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         internal partial IList<Item> M(string clientId, string personId)
     }
 }";
@@ -254,7 +254,7 @@ namespace Foo
     {
         private readonly CustomDbContext context;
 
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial IList<PersonItem> M(string clientId, string personId)
     }
 }";
@@ -323,7 +323,7 @@ namespace Foo
     {
         private readonly CustomDbContext context;
 
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial IList<PersonItem> M(string clientId, string personId)
     }
 }";
@@ -384,7 +384,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial IList<Item> M(int clientId, int? personId)
     }
 }";
@@ -445,7 +445,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial IList<Item> M(int clientId, int? personId)
     }
 }";
@@ -506,7 +506,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial IList<Item> M(int clientId, out int? personId)
     }
 }";
@@ -569,7 +569,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial IList<Item> M(int clientId, out string personId)
     }
 }";
@@ -633,7 +633,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial IList<Item> M(int clientId, out int personId)
     }
 }";
@@ -696,7 +696,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial IList<Item> M(int clientId, ref int personId)
     }
 }";
@@ -760,7 +760,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial int M(int clientId, string? personId);
     }
 }";
@@ -831,7 +831,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial void M(int clientId, string? personId);
     }
 }";
@@ -901,7 +901,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial int M();
     }
 }";
@@ -957,7 +957,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial int M(int clientId, out string? personId);
     }
 }";
@@ -1031,7 +1031,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial int M(int clientId, out string? personId);
     }
 }";
@@ -1105,7 +1105,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial int M(int clientId, out string personId);
     }
 }";
@@ -1179,7 +1179,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial int M(int clientId, out int personId);
     }
 }";
@@ -1252,7 +1252,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial int? M();
     }
 }";

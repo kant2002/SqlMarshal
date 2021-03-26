@@ -27,8 +27,8 @@ namespace Foo
     {
         private DbConnection connection;
 
-        [StoredProcedureGeneratedAttribute("""")]
-        public partial int M([CustomSql]string sql, int clientId, string? personId);
+        [SqlMarshal]
+        public partial int M([RawSql]string sql, int clientId, string? personId);
     }
 }";
             string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
@@ -98,8 +98,8 @@ namespace Foo
     {
         private DbConnection connection;
 
-        [StoredProcedureGeneratedAttribute("""")]
-        public partial IList<Item> M([CustomSql]string sql)
+        [SqlMarshal]
+        public partial IList<Item> M([RawSql]string sql)
     }
 }";
             string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);

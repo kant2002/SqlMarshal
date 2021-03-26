@@ -3,7 +3,7 @@ SqlMarshal
 
 [![NuGet](https://img.shields.io/nuget/v/StoredProcedureSourceGenerator.svg?style=flat)](https://www.nuget.org/packages/StoredProcedureSourceGenerator/)
 
-NativeAOT-friendly mini-ORM.
+NativeAOT-friendly mini-ORM which care about nullability checks.
 
 This project generates typed functions for accessing custom SQL and sstored procedures. Goal of this project to be AOT friendly.
 Database connection can be used from the DbContext of DbConnection objects.
@@ -13,6 +13,7 @@ Database connection can be used from the DbContext of DbConnection objects.
 - [DbConnection examples](#dbconnection-examples)
     - [Stored procedures which returns resultset](#stored-procedures-which-returns-resultset)
     - [Adding parameters](#Adding-parameters)
+    - [Executing SQL](#Executing-SQL)
     - [Output parameters](#Output-parameters)
     - [Procedure which returns single row](#Procedure-which-returns-single-row)
     - [Scalar resuls](#Scalar-resuls)
@@ -28,7 +29,6 @@ Database connection can be used from the DbContext of DbConnection objects.
     - [Async methods](#Async-methods)
     - [Nullable parameters](#Nullable-parameters)
     - [Bidirectional parameters](#Bidirectional-parameters)
-    - [Custom SQL](#Custom-SQL)
 
 # Temporary limitations or plans
 Current version of library has several limitation which not because it cannot be implemented reasonably,
@@ -53,7 +53,7 @@ public partial class DataContext
 
     public DataContext(DbConnection connection) => this.connection = connection;
 
-    [StoredProcedureGenerated("persons_list")]
+    [SqlMarshal("persons_list")]
     public partial IList<Item> GetResult();
 }
 ...
@@ -94,7 +94,7 @@ public partial class DataContext
 {
     private DbConnection connection;
 
-    [StoredProcedureGenerated("persons_list")]
+    [SqlMarshal("persons_list")]
     public partial IList<Item> GetResult();
 }
 ```
@@ -110,12 +110,27 @@ public partial class DataContext
 {
     private DbConnection connection;
 
-    [StoredProcedureGenerated("persons_search")]
+    [SqlMarshal("persons_search")]
     public partial IList<Item> GetResults(string name, string city);
 }
 ```
 
 This code translated to `EXEC persons_search @name, @city`. Generated code do not use named parameters.
+
+### Executing SQL
+
+If stored procedure seems to be overkill, then you can add string parameter with attibute [RawSql]
+and SQL passed to the function would be executed.
+
+```
+public partial class DataContext
+{
+    private DbConnection connection;
+
+    [SqlMarshal]
+    public partial IList<PersonInformation> GetResultFromSql([RawSql]string sql, int maxId);
+}
+```
 
 ### Output parameters
 
@@ -124,7 +139,7 @@ public partial class DataContext
 {
     private DbConnection connection;
 
-    [StoredProcedureGenerated("persons_search_ex")]
+    [SqlMarshal("persons_search_ex")]
     public partial IList<Item> GetResults2(string name, string city, out int totalCount);
 }
 ```
@@ -139,7 +154,7 @@ public partial class DataContext
 {
     private DbConnection connection;
 
-    [StoredProcedureGenerated("persons_by_id")]
+    [SqlMarshal("persons_by_id")]
     public partial Item GetResults(int personId);
 }
 ```
@@ -153,7 +168,7 @@ public partial class DataContext
 {
     private DbConnection connection;
 
-    [StoredProcedureGenerated("total_orders")]
+    [SqlMarshal("total_orders")]
     public partial int GetTotal(int clientId);
 }
 ```
@@ -167,7 +182,7 @@ public partial class DataContext
 {
     private DbConnection connection;
 
-    [StoredProcedureGenerated("process_data")]
+    [SqlMarshal("process_data")]
     public partial void ProcessData(int year);
 }
 ```
@@ -183,7 +198,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated("persons_list")]
+    [SqlMarshal("persons_list")]
     public partial IList<Item> GetResult();
 }
 ```
@@ -198,7 +213,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated("persons_search")]
+    [SqlMarshal("persons_search")]
     public partial IList<Item> GetResults(string name, string city);
 }
 ```
@@ -212,7 +227,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated("persons_search_ex")]
+    [SqlMarshal("persons_search_ex")]
     public partial IList<Item> GetResults2(string name, string city, out int totalCount);
 }
 ```
@@ -227,7 +242,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated("persons_by_id")]
+    [SqlMarshal("persons_by_id")]
     public partial Item GetResults(int personId);
 }
 ```
@@ -241,7 +256,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated("total_orders")]
+    [SqlMarshal("total_orders")]
     public partial int GetTotal(int clientId);
 }
 ```
@@ -255,7 +270,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated("process_data")]
+    [SqlMarshal("process_data")]
     public partial void ProcessData(int year);
 }
 ```
@@ -272,7 +287,7 @@ public partial class DataContext
 {
     private DbConnection connection;
 
-    [StoredProcedureGenerated("total_orders")]
+    [SqlMarshal("total_orders")]
     public partial Task<int> GetTotal(int clientId);
 }
 ```
@@ -284,7 +299,7 @@ public partial class DataContext
 {
     private CustomDbContext dbContext;
 
-    [StoredProcedureGenerated("persons_search")]
+    [SqlMarshal("persons_search")]
     public partial Task<IList<Item>> GetResults(string name, string city);
 }
 ```
@@ -299,7 +314,7 @@ public partial class DataContext
 {
     private DbConnection connection;
 
-    [StoredProcedureGenerated("get_error_message")]
+    [SqlMarshal("get_error_message")]
     public partial string? GetErrorMessage(int? clientId);
 }
 ```
@@ -314,22 +329,7 @@ public partial class DataContext
 {
     private DbConnection connection;
 
-    [StoredProcedureGenerated("get_error_message")]
+    [SqlMarshal("get_error_message")]
     public partial string? GetErrorMessage(ref int? clientId);
-}
-```
-
-### Custom SQL
-
-If stored procedure seems to be overkill, then you can add string parameter with attibute [CustomSql]
-and SQL passed to the function would be executed.
-
-```
-public partial class DataContext
-{
-    private DbConnection connection;
-
-    [StoredProcedureGenerated("")]
-    public partial IList<PersonInformation> GetResultFromSql([CustomSql]string sql, int maxId);
 }
 ```

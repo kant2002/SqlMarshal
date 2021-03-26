@@ -27,7 +27,7 @@ namespace Foo
     {
         private DbConnection connection;
 
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial Task<int> M(int clientId, string? personId);
     }
 }";
@@ -92,7 +92,7 @@ namespace Foo
     {
         private DbConnection connection;
 
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial Task<int> M(int clientId, out int personId);
     }
 }";
@@ -166,7 +166,7 @@ namespace Foo
     {
         private DbConnection connection;
 
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial Task<IList<Item>> M()
     }
 }";
@@ -228,7 +228,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial Task<Item> M()
     }
 }";
@@ -284,7 +284,7 @@ namespace Foo
     {
         private DbConnection connection;
 
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial Task<Item> M()
     }
 }";
@@ -345,7 +345,7 @@ namespace Foo
 {
     class C
     {
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial Task<IList<Item>> M(int clientId, out int? personId)
     }
 }";
@@ -410,7 +410,7 @@ namespace Foo
     {
         private DbConnection connection;
 
-        [StoredProcedureGeneratedAttribute(""sp_TestSP"")]
+        [SqlMarshal(""sp_TestSP"")]
         public partial Task M(int clientId, string? personId);
     }
 }";

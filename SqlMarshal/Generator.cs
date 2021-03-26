@@ -28,25 +28,28 @@ namespace SqlMarshal
 #nullable disable
 
 [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=true)]
-internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
+internal sealed class SqlMarshalAttribute: System.Attribute
 {
-    public StoredProcedureGeneratedAttribute(string name)
+    public SqlMarshalAttribute()
+        => (StoredProcedureName) = (string.Empty);
+
+    public SqlMarshalAttribute(string name)
         => (StoredProcedureName) = (name);
 
     public string StoredProcedureName { get; }
 }
 
 [System.AttributeUsage(System.AttributeTargets.Parameter, AllowMultiple=false)]
-internal sealed class CustomSqlAttribute: System.Attribute
+internal sealed class RawSqlAttribute: System.Attribute
 {
-    public CustomSqlAttribute() {}
+    public RawSqlAttribute() {}
 }
 ";
 
         /// <inheritdoc/>
         public void Initialize(GeneratorInitializationContext context)
         {
-            context.RegisterForPostInitialization((pi) => pi.AddSource("StoredProcedureGeneratedAttribute.cs", AttributeSource));
+            context.RegisterForPostInitialization((pi) => pi.AddSource("SqlMarshalAttribute.cs", AttributeSource));
             context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
         }
 
@@ -59,7 +62,7 @@ internal sealed class CustomSqlAttribute: System.Attribute
                 return;
             }
 
-            INamedTypeSymbol? attributeSymbol = context.Compilation.GetTypeByMetadataName("StoredProcedureGeneratedAttribute");
+            INamedTypeSymbol? attributeSymbol = context.Compilation.GetTypeByMetadataName("SqlMarshalAttribute");
             if (attributeSymbol == null)
             {
                 context.ReportDiagnostic(Diagnostic.Create(
@@ -681,7 +684,7 @@ namespace {namespaceName}
             IParameterSymbol? customSqlParameter = null;
             foreach (var parameter in parameters)
             {
-                var customSqlAttributeCandidate = parameter.GetAttributes().FirstOrDefault(_ => _.AttributeClass?.Name == "CustomSqlAttribute");
+                var customSqlAttributeCandidate = parameter.GetAttributes().FirstOrDefault(_ => _.AttributeClass?.Name == "RawSqlAttribute");
                 if (customSqlAttributeCandidate != null)
                 {
                     customSqlParameter = parameter;
@@ -819,7 +822,7 @@ namespace {namespaceName}
                         return;
                     }
 
-                    if (methodSymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "StoredProcedureGeneratedAttribute"))
+                    if (methodSymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "SqlMarshalAttribute"))
                     {
                         this.Methods.Add(methodSymbol);
                     }

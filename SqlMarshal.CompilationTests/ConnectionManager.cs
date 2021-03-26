@@ -18,13 +18,13 @@ namespace SqlMarshal.CompilationTests
             this.connection = connection;
         }
 
-        [StoredProcedureGenerated("persons_list")]
+        [SqlMarshal("persons_list")]
         public partial IList<PersonInformation> GetResult();
 
-        [StoredProcedureGenerated("persons_by_page")]
+        [SqlMarshal("persons_by_page")]
         public partial IList<PersonInformation> GetResultByPage(int pageNo, out int totalCount);
 
-        [StoredProcedureGenerated("")]
+        [SqlMarshal("")]
         public partial IList<PersonInformation> GetResultFromSql([CustomSql]string sql, int maxId);
     }
 }
