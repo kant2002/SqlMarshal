@@ -1,7 +1,7 @@
 SqlMarshal
 ===========================
 
-[![NuGet](https://img.shields.io/nuget/v/StoredProcedureSourceGenerator.svg?style=flat)](https://www.nuget.org/packages/StoredProcedureSourceGenerator/)
+[![NuGet](https://img.shields.io/nuget/v/SqlMarshal.svg?style=flat)](https://www.nuget.org/packages/SqlMarshal/)
 
 NativeAOT-friendly mini-ORM which care about nullability checks.
 

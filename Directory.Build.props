@@ -8,6 +8,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CA2000;CA1062;CA1031</NoWarn>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <PackageProjectUrl>https://github.com/kant2002/SqlMarshal</PackageProjectUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/kant2002/SqlMarshal</RepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>

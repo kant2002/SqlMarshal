@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -6,6 +6,9 @@
     <!-- Do not include the generator as a lib dependency -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <Authors>Andrii Kurdiumov</Authors>
+    <PackageTags>orm;sql;micro-orm</PackageTags>
+    <Description>NativeAOT-friendly mini-ORM which care about nullability checks.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,6 +22,6 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
-	</ItemGroup>
+  </ItemGroup>
 
 </Project>
