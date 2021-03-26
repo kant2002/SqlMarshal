@@ -71,6 +71,12 @@ finally
 
 Same rule applies to code which uses DbContext.
 
+## Additional samples
+
+In the repository located sample application which I use for testing, but they can be helpful as usage examples.
+
+- https://github.com/kant2002/SqlMarshal/tree/main/SqlMarshal.CompilationTests
+
 ## DbConnection examples
 
 ### Stored procedures which returns resultset
