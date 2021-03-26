@@ -357,7 +357,7 @@ internal sealed class StoredProcedureGeneratedAttribute: System.Attribute
                     continue;
                 }
 
-                source.AppendLine($@"{parameter.Name} = {MarshalValue($"{parameter.Name}Parameter.Value", hasNullableAnnotations, parameter.Type)};");
+                source.AppendLine($@"{parameter.Name} = {MarshalValue($"{parameter.Name}Parameter.Value" + (hasNullableAnnotations ? "!" : string.Empty), hasNullableAnnotations, parameter.Type)};");
             }
         }
 
