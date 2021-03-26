@@ -39,6 +39,38 @@ I think about these options like about plan to implement them.
 - Automatic generation of DbSet<T> inside DbContext, since when working with stored procedures this is most likely burden.
 - FormattableString support not implemented.
 
+## Managing connections
+
+Generated code do not interfere in the connection opening, closing process. It is responsibility of developer to properly wrap code in the transaction and open connections.
+
+```
+public partial class DataContext
+{
+    private DbConnection connection;
+
+    public DataContext(DbConnection connection) => this.connection = connection;
+
+    [StoredProcedureGenerated("persons_list")]
+    public partial IList<Item> GetResult();
+}
+...
+
+var connection = new SqlConnection("......");
+connection.Open();
+try
+{
+    var dataContext = new DataContext(connection);
+    var items = connection.GetResult();
+    // Do work on items here.
+}
+finally
+{
+    connection.Close();
+}
+```
+
+Same rule applies to code which uses DbContext.
+
 ## DbConnection examples
 
 ### Stored procedures which returns resultset
