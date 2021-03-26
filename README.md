@@ -37,6 +37,7 @@ I think about these options like about plan to implement them.
 - Simplified ORM for just mapping object properties from DbDataReader
 - Ability to specify fields in code in the order different then returned from SQL.
 - Automatic generation of DbSet<T> inside DbContext, since when working with stored procedures this is most likely burden.
+- FormattableString support not implemented.
 
 ## DbConnection examples
 
