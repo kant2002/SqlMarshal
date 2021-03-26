@@ -3,7 +3,9 @@ SqlMarshal
 
 [![NuGet](https://img.shields.io/nuget/v/StoredProcedureSourceGenerator.svg?style=flat)](https://www.nuget.org/packages/StoredProcedureSourceGenerator/)
 
-This project generates typed functions for accessing stored procedures. Goal of this project to be AOT friendly.
+NativeAOT-friendly mini-ORM.
+
+This project generates typed functions for accessing custom SQL and sstored procedures. Goal of this project to be AOT friendly.
 Database connection can be used from the DbContext of DbConnection objects.
 
 # Examples
@@ -26,6 +28,7 @@ Database connection can be used from the DbContext of DbConnection objects.
     - [Async methods](#Async-methods)
     - [Nullable parameters](#Nullable-parameters)
     - [Bidirectional parameters](#Bidirectional-parameters)
+    - [Custom SQL](#Custom-SQL)
 
 # Temporary limitations or plans
 Current version of library has several limitation which not because it cannot be implemented reasonably,
@@ -76,6 +79,11 @@ Same rule applies to code which uses DbContext.
 In the repository located sample application which I use for testing, but they can be helpful as usage examples.
 
 - https://github.com/kant2002/SqlMarshal/tree/main/SqlMarshal.CompilationTests
+
+## Performance
+
+Now I only hope (becasue no measurements yet) that performance would be on par with [Dapper](https://github.com/StackExchange/Dapper) or better.
+At least right now generated code is visible and can be reason about.
 
 ## DbConnection examples
 
@@ -308,5 +316,20 @@ public partial class DataContext
 
     [StoredProcedureGenerated("get_error_message")]
     public partial string? GetErrorMessage(ref int? clientId);
+}
+```
+
+### Custom SQL
+
+If stored procedure seems to be overkill, then you can add string parameter with attibute [CustomSql]
+and SQL passed to the function would be executed.
+
+```
+public partial class DataContext
+{
+    private DbConnection connection;
+
+    [StoredProcedureGenerated("")]
+    public partial IList<PersonInformation> GetResultFromSql([CustomSql]string sql, int maxId);
 }
 ```

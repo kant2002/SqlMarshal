@@ -37,6 +37,15 @@ namespace SqlMarshal.CompilationTests
                 }
 
                 WriteLine($"Total count of persons: {totalCount}");
+
+                var persons3 = connectionManager.GetResultFromSql(
+                    "SELECT * FROM person WHERE person_id < @max_id",
+                    2);
+                WriteLine("Print results of SQL");
+                foreach (var personInfo in persons3)
+                {
+                    WritePerson(personInfo);
+                }
             }
             catch (SqlException ex)
             {

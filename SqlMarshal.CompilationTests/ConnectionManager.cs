@@ -7,13 +7,13 @@
 namespace SqlMarshal.CompilationTests
 {
     using System.Collections.Generic;
-    using System.Data.Common;
+    using Microsoft.Data.SqlClient;
 
     internal partial class ConnectionManager
     {
-        private readonly DbConnection connection;
+        private readonly SqlConnection connection;
 
-        public ConnectionManager(DbConnection connection)
+        public ConnectionManager(SqlConnection connection)
         {
             this.connection = connection;
         }
@@ -23,5 +23,8 @@ namespace SqlMarshal.CompilationTests
 
         [StoredProcedureGenerated("persons_by_page")]
         public partial IList<PersonInformation> GetResultByPage(int pageNo, out int totalCount);
+
+        [StoredProcedureGenerated("")]
+        public partial IList<PersonInformation> GetResultFromSql([CustomSql]string sql, int maxId);
     }
 }
