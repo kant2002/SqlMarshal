@@ -316,7 +316,7 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
-            using var reader = await command.ExecuteReaderAsync();
+            using var reader = await command.ExecuteReaderAsync(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
             if (!(await reader.ReadAsync()))
             {
                 return null;

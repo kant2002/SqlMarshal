@@ -336,7 +336,7 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
-            using var reader = command.ExecuteReader();
+            using var reader = command.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
             if (!reader.Read())
             {
                 return null;

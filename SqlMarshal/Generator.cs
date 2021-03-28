@@ -558,13 +558,14 @@ namespace {namespaceName}
             var connectionSymbol = GetConnectionField(classSymbol);
             if (connectionSymbol != null)
             {
+                string additionalReaderParameters = isList ? string.Empty : "CommandBehavior.SingleResult | CommandBehavior.SingleRow";
                 if (isTask)
                 {
-                    source.AppendLine("using var reader = await command.ExecuteReaderAsync();");
+                    source.AppendLine($"using var reader = await command.ExecuteReaderAsync({additionalReaderParameters});");
                 }
                 else
                 {
-                    source.AppendLine("using var reader = command.ExecuteReader();");
+                    source.AppendLine($"using var reader = command.ExecuteReader({additionalReaderParameters});");
                 }
 
                 if (isList)
