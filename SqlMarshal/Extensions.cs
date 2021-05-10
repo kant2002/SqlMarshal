@@ -52,5 +52,15 @@ namespace SqlMarshal
 
             return IsDbContext(baseType);
         }
+
+        internal static bool IsCancellationToken(this ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol.Name == "CancellationToken")
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

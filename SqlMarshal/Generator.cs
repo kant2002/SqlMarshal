@@ -370,17 +370,18 @@ internal sealed class RawSqlAttribute: System.Attribute
 
         private static void ExecuteSimpleQuery(
             IndentedStringBuilder source,
-            IMethodSymbol methodSymbol,
+            MethodGenerationContext methodGenerationContext,
             bool hasNullableAnnotations,
             bool isTask,
             ITypeSymbol returnType)
         {
             var hasResult = returnType.SpecialType != SpecialType.System_Void && returnType.Name != "Task";
+            var cancellationToken = methodGenerationContext.CancellationTokenParameter?.Name ?? string.Empty;
             if (!hasResult)
             {
                 if (isTask)
                 {
-                    source.AppendLine($@"await command.ExecuteNonQueryAsync();");
+                    source.AppendLine($@"await command.ExecuteNonQueryAsync({cancellationToken});");
                 }
                 else
                 {
@@ -391,7 +392,7 @@ internal sealed class RawSqlAttribute: System.Attribute
             {
                 if (isTask)
                 {
-                    source.AppendLine($@"var result = await command.ExecuteScalarAsync();");
+                    source.AppendLine($@"var result = await command.ExecuteScalarAsync({cancellationToken});");
                 }
                 else
                 {
@@ -399,7 +400,7 @@ internal sealed class RawSqlAttribute: System.Attribute
                 }
             }
 
-            MarshalOutputParameters(source, methodSymbol.Parameters, hasNullableAnnotations);
+            MarshalOutputParameters(source, methodGenerationContext.MethodSymbol.Parameters, hasNullableAnnotations);
 
             if (hasResult)
             {
@@ -552,9 +553,22 @@ namespace {namespaceName}
             bool isTask)
         {
             var useDbConnection = methodGenerationContext.UseDbConnection;
+            var cancellationToken = methodGenerationContext.CancellationTokenParameter?.Name ?? string.Empty;
             if (useDbConnection)
             {
                 string additionalReaderParameters = isList ? string.Empty : "CommandBehavior.SingleResult | CommandBehavior.SingleRow";
+                if (isTask && !string.IsNullOrEmpty(cancellationToken))
+                {
+                    if (string.IsNullOrEmpty(additionalReaderParameters))
+                    {
+                        additionalReaderParameters = cancellationToken;
+                    }
+                    else
+                    {
+                        additionalReaderParameters = additionalReaderParameters + "," + cancellationToken;
+                    }
+                }
+
                 if (isTask)
                 {
                     source.AppendLine($"using var reader = await command.ExecuteReaderAsync({additionalReaderParameters});");
@@ -569,7 +583,7 @@ namespace {namespaceName}
                     source.AppendLine($@"var result = new List<{itemType.Name}>();");
                     if (isTask)
                     {
-                        source.AppendLine("while (await reader.ReadAsync())");
+                        source.AppendLine($"while (await reader.ReadAsync({cancellationToken}))");
                     }
                     else
                     {
@@ -594,7 +608,7 @@ namespace {namespaceName}
                     source.AppendLine();
                     if (isTask)
                     {
-                        source.AppendLine("await reader.CloseAsync();");
+                        source.AppendLine($"await reader.CloseAsync({cancellationToken});");
                     }
                     else
                     {
@@ -605,7 +619,7 @@ namespace {namespaceName}
                 {
                     if (isTask)
                     {
-                        source.AppendLine("if (!(await reader.ReadAsync()))");
+                        source.AppendLine($"if (!(await reader.ReadAsync({cancellationToken})))");
                     }
                     else
                     {
@@ -638,7 +652,7 @@ namespace {namespaceName}
 
                     if (isTask)
                     {
-                        source.AppendLine("await reader.CloseAsync();");
+                        source.AppendLine($"await reader.CloseAsync({cancellationToken});");
                     }
                     else
                     {
@@ -653,7 +667,7 @@ namespace {namespaceName}
                 var itemTypeProperty = GetDbSetField(dbContextSymbol, itemType)?.Name ?? itemType.Name + "s";
                 if (isTask)
                 {
-                    source.AppendLine($"var result = await this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToListAsync" : "AsEnumerable().FirstOrDefaultAsync")}();");
+                    source.AppendLine($"var result = await this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToListAsync" : "AsEnumerable().FirstOrDefaultAsync")}({cancellationToken});");
                 }
                 else
                 {
@@ -775,7 +789,7 @@ namespace {namespaceName}
             {
                 if (useDbConnection)
                 {
-                    ExecuteSimpleQuery(source, methodSymbol, hasNullableAnnotations, isTask, returnType);
+                    ExecuteSimpleQuery(source, methodGenerationContext, hasNullableAnnotations, isTask, returnType);
                 }
                 else
                 {
@@ -784,7 +798,7 @@ namespace {namespaceName}
             {{
 ");
                     source.PushIndent();
-                    ExecuteSimpleQuery(source, methodSymbol, hasNullableAnnotations, isTask, returnType);
+                    ExecuteSimpleQuery(source, methodGenerationContext, hasNullableAnnotations, isTask, returnType);
 
                     source.PopIndent();
                     source.Append($@"}}

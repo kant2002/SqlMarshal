@@ -29,6 +29,8 @@ Database connection can be used from the DbContext of DbConnection objects.
     - [Async methods](#Async-methods)
     - [Nullable parameters](#Nullable-parameters)
     - [Bidirectional parameters](#Bidirectional-parameters)
+    - [Pass connection as parameter](#Pass-connection-as-parameters)
+    - [CancellationToken support](#CancellationToken-support)
 
 # Temporary limitations or plans
 Current version of library has several limitations which not because it cannot be implemented reasonably,
@@ -330,5 +332,33 @@ public partial class DataContext
 
     [SqlMarshal("get_error_message")]
     public partial string? GetErrorMessage(ref int? clientId);
+}
+```
+
+### Pass connection as parameter
+
+Instead of having DbConnection as a field of the class, it can be passed as parameter, and even be placed in the extension method.
+
+```
+public static partial class DataContext
+{
+    [SqlMarshal("persons_list")]
+    public static partial IList<Item> GetResult(DbConnection connection);
+
+    [SqlMarshal("persons_by_id")]
+    public static partial Item GetResults(DbConnection connection, int personId);
+}
+```
+
+### CancellationToken support
+
+You can add CancellationToken inside your code and it would be propagated inside ADO.NET calls.
+You can use that with DbContext too.
+
+```
+public static partial class DataContext
+{
+    [SqlMarshal("total_orders")]
+    public partial Task<int> GetTotal(DbConnection connection, int clientId, CancellationToken cancellationToken);
 }
 ```

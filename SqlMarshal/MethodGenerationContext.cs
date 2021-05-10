@@ -20,6 +20,7 @@ namespace SqlMarshal
             this.ConnectionParameter = GetConnectionParameter(methodSymbol);
             this.DbContextParameter = GetDbContextParameter(methodSymbol);
             this.CustomSqlParameter = GetCustomSqlParameter(methodSymbol);
+            this.CancellationTokenParameter = GetCancellationTokenParameter(methodSymbol);
             var parameters = methodSymbol.Parameters;
             if (this.ConnectionParameter != null)
             {
@@ -36,6 +37,11 @@ namespace SqlMarshal
                 parameters = parameters.Remove(this.CustomSqlParameter);
             }
 
+            if (this.CancellationTokenParameter != null)
+            {
+                parameters = parameters.Remove(this.CancellationTokenParameter);
+            }
+
             this.SqlParameters = parameters;
         }
 
@@ -50,6 +56,8 @@ namespace SqlMarshal
         internal IParameterSymbol? DbContextParameter { get; }
 
         internal IParameterSymbol? CustomSqlParameter { get; }
+
+        internal IParameterSymbol? CancellationTokenParameter { get; }
 
         internal ImmutableArray<IParameterSymbol> SqlParameters { get; }
 
@@ -71,6 +79,19 @@ namespace SqlMarshal
             foreach (var parameterSymbol in methodSymbol.Parameters)
             {
                 if (parameterSymbol.Type.IsDbContext())
+                {
+                    return parameterSymbol;
+                }
+            }
+
+            return null;
+        }
+
+        private static IParameterSymbol? GetCancellationTokenParameter(IMethodSymbol methodSymbol)
+        {
+            foreach (var parameterSymbol in methodSymbol.Parameters)
+            {
+                if (parameterSymbol.Type.IsCancellationToken())
                 {
                     return parameterSymbol;
                 }
