@@ -331,7 +331,7 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
-            using var reader = command.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
+            using var reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult | System.Data.CommandBehavior.SingleRow);
             if (!reader.Read())
             {
                 return null;
@@ -401,7 +401,7 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
-            using var reader = command.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
+            using var reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult | System.Data.CommandBehavior.SingleRow);
             if (!reader.Read())
             {
                 return null;
@@ -471,7 +471,7 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
-            using var reader = command.ExecuteReader(CommandBehavior.SingleResult | CommandBehavior.SingleRow);
+            using var reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult | System.Data.CommandBehavior.SingleRow);
             if (!reader.Read())
             {
                 throw new InvalidOperation(""No data returned from command."");

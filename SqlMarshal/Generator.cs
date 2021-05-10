@@ -556,7 +556,7 @@ namespace {namespaceName}
             var cancellationToken = methodGenerationContext.CancellationTokenParameter?.Name ?? string.Empty;
             if (useDbConnection)
             {
-                string additionalReaderParameters = isList ? string.Empty : "CommandBehavior.SingleResult | CommandBehavior.SingleRow";
+                string additionalReaderParameters = isList ? string.Empty : "System.Data.CommandBehavior.SingleResult | System.Data.CommandBehavior.SingleRow";
                 if (isTask && !string.IsNullOrEmpty(cancellationToken))
                 {
                     if (string.IsNullOrEmpty(additionalReaderParameters))
