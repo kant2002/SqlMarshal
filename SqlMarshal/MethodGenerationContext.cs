@@ -57,7 +57,7 @@ namespace SqlMarshal
         {
             foreach (var parameterSymbol in methodSymbol.Parameters)
             {
-                if (IsDbConnection(parameterSymbol.Type))
+                if (parameterSymbol.Type.IsDbConnection())
                 {
                     return parameterSymbol;
                 }
@@ -70,7 +70,7 @@ namespace SqlMarshal
         {
             foreach (var parameterSymbol in methodSymbol.Parameters)
             {
-                if (IsDbContext(parameterSymbol.Type))
+                if (parameterSymbol.Type.IsDbContext())
                 {
                     return parameterSymbol;
                 }
@@ -92,38 +92,6 @@ namespace SqlMarshal
             }
 
             return null;
-        }
-
-        private static bool IsDbConnection(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol.Name == "DbConnection")
-            {
-                return true;
-            }
-
-            var baseType = typeSymbol.BaseType;
-            if (baseType == null)
-            {
-                return false;
-            }
-
-            return IsDbConnection(baseType);
-        }
-
-        private static bool IsDbContext(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol.Name == "DbContext")
-            {
-                return true;
-            }
-
-            var baseType = typeSymbol.BaseType;
-            if (baseType == null)
-            {
-                return false;
-            }
-
-            return IsDbContext(baseType);
         }
     }
 }

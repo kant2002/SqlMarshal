@@ -48,7 +48,7 @@ namespace SqlMarshal
             var fieldSymbols = classSymbol.GetMembers().OfType<IFieldSymbol>();
             foreach (var fieldSymbol in fieldSymbols)
             {
-                if (IsDbConnection(fieldSymbol.Type))
+                if (fieldSymbol.Type.IsDbConnection())
                 {
                     return fieldSymbol;
                 }
@@ -65,37 +65,15 @@ namespace SqlMarshal
         private static IFieldSymbol? GetContextField(INamedTypeSymbol classSymbol)
         {
             var fieldSymbols = classSymbol.GetMembers().OfType<IFieldSymbol>();
-            foreach (var memberSymbol in fieldSymbols)
+            foreach (var fieldSymbol in fieldSymbols)
             {
-                var baseType = memberSymbol.Type.BaseType;
-                if (baseType == null)
+                if (fieldSymbol.Type.IsDbContext())
                 {
-                    continue;
-                }
-
-                if (baseType.Name == "DbContext")
-                {
-                    return memberSymbol;
+                    return fieldSymbol;
                 }
             }
 
             return null;
-        }
-
-        private static bool IsDbConnection(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol.Name == "DbConnection")
-            {
-                return true;
-            }
-
-            var baseType = typeSymbol.BaseType;
-            if (baseType == null)
-            {
-                return false;
-            }
-
-            return IsDbConnection(baseType);
         }
     }
 }
