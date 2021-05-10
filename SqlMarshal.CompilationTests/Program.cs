@@ -7,15 +7,23 @@
 namespace SqlMarshal.CompilationTests
 {
     using System;
+    using System.Data.Common;
     using System.Linq;
-    using Microsoft.Data.SqlClient;
     using static System.Console;
+    using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
 
     internal class Program
     {
         private static void Main(string[] args)
         {
             Console.WriteLine("SqlMarshal sample application!");
+
+            TestSqlClient();
+        }
+
+        private static void TestSqlClient()
+        {
+            Console.WriteLine("**** Testing Sql client! ****");
 
             using var sqlConnection = new SqlConnection("server=(localdb)\\mssqllocaldb;database=sqlmarshal_sample;integrated security=true");
             var connectionManager = new ConnectionManager(sqlConnection);
@@ -47,7 +55,7 @@ namespace SqlMarshal.CompilationTests
                     WritePerson(personInfo);
                 }
             }
-            catch (SqlException ex)
+            catch (DbException ex)
             {
                 WriteLine("SQL Exception happens. Create sqlmarshal_sample database on the LocalDB instance.");
                 WriteLine(ex.Message);

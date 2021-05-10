@@ -97,7 +97,7 @@ namespace Foo
 
     partial class C
     {
-        public partial Item M()
+        public partial Item? M()
         {
             var connection = this.dbContext.Database.GetDbConnection();
             using var command = connection.CreateCommand();

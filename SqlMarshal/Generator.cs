@@ -618,7 +618,15 @@ namespace {namespaceName}
 
                     source.AppendLine("{");
                     source.PushIndent();
-                    source.AppendLine("return null;");
+                    if (hasNullableAnnotations && methodSymbol.ReturnType.NullableAnnotation != NullableAnnotation.Annotated)
+                    {
+                        source.AppendLine("throw new InvalidOperation(\"No data returned from command.\");");
+                    }
+                    else
+                    {
+                        source.AppendLine("return null;");
+                    }
+
                     source.PopIndent();
                     source.AppendLine("}");
                     source.AppendLine();
@@ -702,7 +710,24 @@ namespace {namespaceName}
             var signature = $"({string.Join(", ", originalParameters.Select(_ => GetParameterDeclaration(_)))})";
             var itemType = GetUnderlyingType(returnType);
             var getConnection = this.GetConnectionStatement(methodSymbol.ContainingType);
-            source.Append($@"        {GetAccessibility(symbol.DeclaredAccessibility)} partial {(isTask ? "async " : string.Empty)}{methodSymbol.ReturnType} {methodSymbol.Name}{signature}
+            var returnTypeName = methodSymbol.ReturnType.ToString();
+            var isList = itemType != returnType;
+            var isScalarType = IsScalarType(GetUnderlyingType(returnType))
+                || returnType.SpecialType == SpecialType.System_Void
+                || returnType.Name == "Task";
+            if (!hasNullableAnnotations && methodSymbol.ReturnType.IsReferenceType && !isScalarType && !isList)
+            {
+                if (methodSymbol.ReturnType.Name == "Task")
+                {
+                    returnTypeName = "Task<" + returnType + "?>";
+                }
+                else
+                {
+                    returnTypeName += "?";
+                }
+            }
+
+            source.Append($@"        {GetAccessibility(symbol.DeclaredAccessibility)} partial {(isTask ? "async " : string.Empty)}{returnTypeName} {methodSymbol.Name}{signature}
         {{
             {getConnection}
             using var command = connection.CreateCommand();
@@ -746,10 +771,6 @@ namespace {namespaceName}
                 }
             }
 
-            var isList = itemType != returnType;
-            var isScalarType = IsScalarType(GetUnderlyingType(returnType))
-                || returnType.SpecialType == SpecialType.System_Void
-                || returnType.Name == "Task";
             bool useDbConnection = GetConnectionField(methodSymbol.ContainingType) != null;
             var requireDbCommandParameters = isScalarType || useDbConnection;
             if (requireDbCommandParameters)
