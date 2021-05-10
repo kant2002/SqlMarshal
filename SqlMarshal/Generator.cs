@@ -381,7 +381,7 @@ internal sealed class RawSqlAttribute: System.Attribute
             {
                 if (isTask)
                 {
-                    source.AppendLine($@"await command.ExecuteNonQueryAsync({cancellationToken});");
+                    source.AppendLine($@"await command.ExecuteNonQueryAsync({cancellationToken}).ConfigureAwait(false);");
                 }
                 else
                 {
@@ -392,7 +392,7 @@ internal sealed class RawSqlAttribute: System.Attribute
             {
                 if (isTask)
                 {
-                    source.AppendLine($@"var result = await command.ExecuteScalarAsync({cancellationToken});");
+                    source.AppendLine($@"var result = await command.ExecuteScalarAsync({cancellationToken}).ConfigureAwait(false);");
                 }
                 else
                 {
@@ -571,7 +571,7 @@ namespace {namespaceName}
 
                 if (isTask)
                 {
-                    source.AppendLine($"using var reader = await command.ExecuteReaderAsync({additionalReaderParameters});");
+                    source.AppendLine($"using var reader = await command.ExecuteReaderAsync({additionalReaderParameters}).ConfigureAwait(false);");
                 }
                 else
                 {
@@ -583,7 +583,7 @@ namespace {namespaceName}
                     source.AppendLine($@"var result = new List<{itemType.Name}>();");
                     if (isTask)
                     {
-                        source.AppendLine($"while (await reader.ReadAsync({cancellationToken}))");
+                        source.AppendLine($"while (await reader.ReadAsync({cancellationToken}).ConfigureAwait(false))");
                     }
                     else
                     {
@@ -608,7 +608,7 @@ namespace {namespaceName}
                     source.AppendLine();
                     if (isTask)
                     {
-                        source.AppendLine($"await reader.CloseAsync({cancellationToken});");
+                        source.AppendLine($"await reader.CloseAsync({cancellationToken}).ConfigureAwait(false);");
                     }
                     else
                     {
@@ -619,7 +619,7 @@ namespace {namespaceName}
                 {
                     if (isTask)
                     {
-                        source.AppendLine($"if (!(await reader.ReadAsync({cancellationToken})))");
+                        source.AppendLine($"if (!(await reader.ReadAsync({cancellationToken}).ConfigureAwait(false)))");
                     }
                     else
                     {
@@ -652,7 +652,7 @@ namespace {namespaceName}
 
                     if (isTask)
                     {
-                        source.AppendLine($"await reader.CloseAsync({cancellationToken});");
+                        source.AppendLine($"await reader.CloseAsync({cancellationToken}).ConfigureAwait(false);");
                     }
                     else
                     {
@@ -667,7 +667,7 @@ namespace {namespaceName}
                 var itemTypeProperty = GetDbSetField(dbContextSymbol, itemType)?.Name ?? itemType.Name + "s";
                 if (isTask)
                 {
-                    source.AppendLine($"var result = await this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToListAsync" : "AsEnumerable().FirstOrDefaultAsync")}({cancellationToken});");
+                    source.AppendLine($"var result = await this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToListAsync" : "AsEnumerable().FirstOrDefaultAsync")}({cancellationToken}).ConfigureAwait(false);");
                 }
                 else
                 {

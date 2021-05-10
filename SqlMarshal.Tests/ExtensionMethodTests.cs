@@ -67,7 +67,7 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            var result = await command.ExecuteScalarAsync();
+            var result = await command.ExecuteScalarAsync().ConfigureAwait(false);
             return (int)result;
         }
     }
@@ -130,7 +130,7 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            var result = await command.ExecuteScalarAsync();
+            var result = await command.ExecuteScalarAsync().ConfigureAwait(false);
             return (int)result;
         }
     }
@@ -193,7 +193,7 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            var result = await command.ExecuteScalarAsync();
+            var result = await command.ExecuteScalarAsync().ConfigureAwait(false);
             return (int)result;
         }
     }
@@ -248,9 +248,9 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
-            using var reader = await command.ExecuteReaderAsync();
+            using var reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
             var result = new List<Item>();
-            while (await reader.ReadAsync())
+            while (await reader.ReadAsync().ConfigureAwait(false))
             {
                 var item = new Item();
                 var value_0 = reader.GetValue(0);
@@ -262,7 +262,7 @@ namespace Foo
                 result.Add(item);
             }
 
-            await reader.CloseAsync();
+            await reader.CloseAsync().ConfigureAwait(false);
             return result;
         }
     }

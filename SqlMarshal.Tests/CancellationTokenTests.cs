@@ -71,7 +71,7 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            var result = await command.ExecuteScalarAsync(cancellationToken);
+            var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
             return (int)result;
         }
     }
@@ -136,7 +136,7 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            await command.ExecuteNonQueryAsync(cancellationToken);
+            await command.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
         }
     }
 }";
@@ -192,9 +192,9 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
-            using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
             var result = new List<Item>();
-            while (await reader.ReadAsync(cancellationToken))
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 var item = new Item();
                 var value_0 = reader.GetValue(0);
@@ -206,7 +206,7 @@ namespace Foo
                 result.Add(item);
             }
 
-            await reader.CloseAsync(cancellationToken);
+            await reader.CloseAsync(cancellationToken).ConfigureAwait(false);
             return result;
         }
     }
@@ -268,7 +268,7 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id OUTPUT"";
-            var result = await this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToListAsync(cancellationToken);
+            var result = await this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToListAsync(cancellationToken).ConfigureAwait(false);
             personId = personIdParameter.Value == DBNull.Value ? (int?)null : (int)personIdParameter.Value;
             return result;
         }
