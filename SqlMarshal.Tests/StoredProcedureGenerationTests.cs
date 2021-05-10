@@ -617,7 +617,7 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id OUTPUT"";
             var result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
-            personId = personIdParameter.Value == DBNull.Value ? (string)null : (string)personIdParameter.Value;
+            personId = personIdParameter.Value == DBNull.Value ? (string?)null : (string)personIdParameter.Value;
             return result;
         }
     }
@@ -1158,7 +1158,7 @@ namespace Foo
             try
             {
                 var result = command.ExecuteScalar();
-                personId = personIdParameter.Value == DBNull.Value ? (string)null : (string)personIdParameter.Value;
+                personId = personIdParameter.Value == DBNull.Value ? (string?)null : (string)personIdParameter.Value;
                 return (int)result;
             }
             finally

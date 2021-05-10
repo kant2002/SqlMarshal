@@ -392,7 +392,13 @@ internal sealed class RawSqlAttribute: System.Attribute
                     nonNullExpression);
 
                 // return mappingExpression.NormalizeWhitespace().ToFullString();
-                return $@"{identifier} == DBNull.Value ? ({returnType.ToDisplayString()})null : ({GetUnderlyingType(returnType).ToDisplayString()}){identifier}";
+                var nullableReturnType = returnType.ToDisplayString();
+                if (!hasNullableAnnotations && returnType.IsReferenceType && returnType.NullableAnnotation != NullableAnnotation.Annotated)
+                {
+                    nullableReturnType += "?";
+                }
+
+                return $@"{identifier} == DBNull.Value ? ({nullableReturnType})null : ({GetUnderlyingType(returnType).ToDisplayString()}){identifier}";
             }
             else
             {

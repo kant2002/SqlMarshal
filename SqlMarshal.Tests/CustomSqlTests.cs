@@ -135,7 +135,7 @@ namespace Foo
             {
                 var item = new Item();
                 var value_0 = reader.GetValue(0);
-                item.StringValue = value_0 == DBNull.Value ? (string)null : (string)value_0;
+                item.StringValue = value_0 == DBNull.Value ? (string?)null : (string)value_0;
                 var value_1 = reader.GetValue(1);
                 item.Int32Value = (int)value_1;
                 var value_2 = reader.GetValue(2);
