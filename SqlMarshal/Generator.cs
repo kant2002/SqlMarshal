@@ -464,7 +464,7 @@ namespace {namespaceName}
             }
 
             source.AppendLine();
-            source.AppendLine($"partial {(classSymbol.IsStatic ? "static " : string.Empty)}class {classSymbol.Name}");
+            source.AppendLine($"{(classSymbol.IsStatic ? "static " : string.Empty)}partial class {classSymbol.Name}");
             source.AppendLine("{");
 
             // workaround.
@@ -549,9 +549,8 @@ namespace {namespaceName}
             bool isList,
             bool isTask)
         {
-            var classSymbol = methodSymbol.ContainingType;
-            var connectionSymbol = methodGenerationContext.ClassGenerationContext.ConnectionField;
-            if (connectionSymbol != null)
+            var useDbConnection = methodGenerationContext.UseDbConnection;
+            if (useDbConnection)
             {
                 string additionalReaderParameters = isList ? string.Empty : "CommandBehavior.SingleResult | CommandBehavior.SingleRow";
                 if (isTask)
@@ -707,7 +706,7 @@ namespace {namespaceName}
                 }
             }
 
-            source.Append($@"        {GetAccessibility(symbol.DeclaredAccessibility)} partial {(methodSymbol.IsStatic ? "static " : string.Empty)}{(isTask ? "async " : string.Empty)}{returnTypeName} {methodSymbol.Name}{signature}
+            source.Append($@"        {GetAccessibility(symbol.DeclaredAccessibility)} {(methodSymbol.IsStatic ? "static " : string.Empty)}partial {(isTask ? "async " : string.Empty)}{returnTypeName} {methodSymbol.Name}{signature}
         {{
             {getConnection}
             using var command = connection.CreateCommand();
