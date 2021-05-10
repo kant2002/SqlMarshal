@@ -146,22 +146,6 @@ internal sealed class RawSqlAttribute: System.Attribute
             return null;
         }
 
-        private static bool IsDbConnection(ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol.Name == "DbConnection")
-            {
-                return true;
-            }
-
-            var baseType = typeSymbol.BaseType;
-            if (baseType == null)
-            {
-                return false;
-            }
-
-            return IsDbConnection(baseType);
-        }
-
         private static ITypeSymbol GetUnderlyingType(ITypeSymbol returnType)
         {
             if (returnType is INamedTypeSymbol namedTypeSymbol)
@@ -508,33 +492,51 @@ namespace {namespaceName}
                 return $"var connection = this.{connectionSymbol.Name};";
             }
 
+            var dbContextParameterSymbol = methodGenerationContext.DbContextParameter;
+            if (dbContextParameterSymbol != null)
+            {
+                return $"var connection = {dbContextParameterSymbol.Name}.Database.GetDbConnection();";
+            }
+
             var dbContextSymbol = methodGenerationContext.ClassGenerationContext.DbContextField;
             var contextName = dbContextSymbol?.Name ?? "dbContext";
             return $"var connection = this.{contextName}.Database.GetDbConnection();";
         }
 
-        private string GetOpenConnectionStatement(ClassGenerationContext classGenerationContext)
+        private string GetOpenConnectionStatement(MethodGenerationContext methodGenerationContext)
         {
-            var connectionSymbol = classGenerationContext.ConnectionField;
+            var dbContextParameterSymbol = methodGenerationContext.DbContextParameter;
+            if (dbContextParameterSymbol != null)
+            {
+                return $"{dbContextParameterSymbol.Name}.Database.OpenConnection();";
+            }
+
+            var connectionSymbol = methodGenerationContext.ClassGenerationContext.ConnectionField;
             if (connectionSymbol != null)
             {
                 return $"this.{connectionSymbol.Name}.Open();";
             }
 
-            var dbContextSymbol = classGenerationContext.DbContextField;
+            var dbContextSymbol = methodGenerationContext.ClassGenerationContext.DbContextField;
             var contextName = dbContextSymbol?.Name ?? "dbContext";
             return $"this.{contextName}.Database.OpenConnection();";
         }
 
-        private string GetCloseConnectionStatement(ClassGenerationContext classGenerationContext)
+        private string GetCloseConnectionStatement(MethodGenerationContext methodGenerationContext)
         {
-            var connectionSymbol = classGenerationContext.ConnectionField;
+            var dbContextParameterSymbol = methodGenerationContext.DbContextParameter;
+            if (dbContextParameterSymbol != null)
+            {
+                return $"{dbContextParameterSymbol.Name}.Database.CloseConnection();";
+            }
+
+            var connectionSymbol = methodGenerationContext.ClassGenerationContext.ConnectionField;
             if (connectionSymbol != null)
             {
                 return $"this.{connectionSymbol.Name}.Close();";
             }
 
-            var dbContextSymbol = classGenerationContext.DbContextField;
+            var dbContextSymbol = methodGenerationContext.ClassGenerationContext.DbContextField;
             var contextName = dbContextSymbol?.Name ?? "dbContext";
             return $"this.{contextName}.Database.CloseConnection();";
         }
@@ -777,7 +779,7 @@ namespace {namespaceName}
                 }
                 else
                 {
-                    source.Append($@"{this.GetOpenConnectionStatement(methodGenerationContext.ClassGenerationContext)}
+                    source.Append($@"{this.GetOpenConnectionStatement(methodGenerationContext)}
             try
             {{
 ");
@@ -788,7 +790,7 @@ namespace {namespaceName}
                     source.Append($@"}}
             finally
             {{
-                {this.GetCloseConnectionStatement(methodGenerationContext.ClassGenerationContext)}
+                {this.GetCloseConnectionStatement(methodGenerationContext)}
             }}
 ");
                 }

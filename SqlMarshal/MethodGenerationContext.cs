@@ -18,11 +18,17 @@ namespace SqlMarshal
             this.MethodSymbol = methodSymbol;
 
             this.ConnectionParameter = GetConnectionParameter(methodSymbol);
+            this.DbContextParameter = GetDbContextParameter(methodSymbol);
             this.CustomSqlParameter = GetCustomSqlParameter(methodSymbol);
             var parameters = methodSymbol.Parameters;
             if (this.ConnectionParameter != null)
             {
                 parameters = parameters.Remove(this.ConnectionParameter);
+            }
+
+            if (this.DbContextParameter != null)
+            {
+                parameters = parameters.Remove(this.DbContextParameter);
             }
 
             if (this.CustomSqlParameter != null)
@@ -41,6 +47,8 @@ namespace SqlMarshal
 
         internal IParameterSymbol? ConnectionParameter { get; }
 
+        internal IParameterSymbol? DbContextParameter { get; }
+
         internal IParameterSymbol? CustomSqlParameter { get; }
 
         internal ImmutableArray<IParameterSymbol> SqlParameters { get; }
@@ -50,6 +58,19 @@ namespace SqlMarshal
             foreach (var parameterSymbol in methodSymbol.Parameters)
             {
                 if (IsDbConnection(parameterSymbol.Type))
+                {
+                    return parameterSymbol;
+                }
+            }
+
+            return null;
+        }
+
+        private static IParameterSymbol? GetDbContextParameter(IMethodSymbol methodSymbol)
+        {
+            foreach (var parameterSymbol in methodSymbol.Parameters)
+            {
+                if (IsDbContext(parameterSymbol.Type))
                 {
                     return parameterSymbol;
                 }
@@ -87,6 +108,22 @@ namespace SqlMarshal
             }
 
             return IsDbConnection(baseType);
+        }
+
+        private static bool IsDbContext(ITypeSymbol typeSymbol)
+        {
+            if (typeSymbol.Name == "DbContext")
+            {
+                return true;
+            }
+
+            var baseType = typeSymbol.BaseType;
+            if (baseType == null)
+            {
+                return false;
+            }
+
+            return IsDbContext(baseType);
         }
     }
 }
