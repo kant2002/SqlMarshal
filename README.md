@@ -64,7 +64,7 @@ connection.Open();
 try
 {
     var dataContext = new DataContext(connection);
-    var items = connection.GetResult();
+    var items = dataContext.GetResult();
     // Do work on items here.
 }
 finally
