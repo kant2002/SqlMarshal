@@ -1336,16 +1336,24 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
-            using var reader = command.ExecuteReader();
-            var result = new List<String>();
-            while (reader.Read())
+            this.dbContext.Database.OpenConnection();
+            try
             {
-                var value_0 = reader.GetValue(0);
-                var item = (string)value_0;
-                result.Add(item);
-            }
+                using var reader = command.ExecuteReader();
+                var result = new List<String>();
+                while (reader.Read())
+                {
+                    var value_0 = reader.GetValue(0);
+                    var item = (string)value_0;
+                    result.Add(item);
+                }
 
-            reader.Close();
+                reader.Close();
+            }
+            finally
+            {
+                this.dbContext.Database.CloseConnection();
+            }
             return result;
         }
     }
@@ -1394,19 +1402,27 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
-            using var reader = command.ExecuteReader();
-            var result = new List<(string, int)>();
-            while (reader.Read())
+            this.dbContext.Database.OpenConnection();
+            try
             {
-                var value_0 = reader.GetValue(0);
-                var value_1 = reader.GetValue(1);
-                result.Add((
-                    (string)value_0,
-                    (int)value_1
-                ));
-            }
+                using var reader = command.ExecuteReader();
+                var result = new List<(string, int)>();
+                while (reader.Read())
+                {
+                    var value_0 = reader.GetValue(0);
+                    var value_1 = reader.GetValue(1);
+                    result.Add((
+                        (string)value_0,
+                        (int)value_1
+                    ));
+                }
 
-            reader.Close();
+                reader.Close();
+            }
+            finally
+            {
+                this.dbContext.Database.CloseConnection();
+            }
             return result;
         }
     }

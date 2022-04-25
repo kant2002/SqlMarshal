@@ -78,6 +78,13 @@ internal class Program
         {
             WritePerson(personInfo);
         }
+
+        var persons4 = connectionManager.GetTupleResult();
+        WriteLine("Print first 10 rows from persons_list SP using tuples");
+        foreach (var personInfo in persons4.Take(10))
+        {
+            WriteLine($"Name: {personInfo.Name} (#{personInfo.Id})");
+        }
     }
 
     private static void WritePerson(PersonInformation personInfo)

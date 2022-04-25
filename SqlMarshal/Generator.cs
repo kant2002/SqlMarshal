@@ -801,7 +801,28 @@ namespace {namespaceName}
         }
         else
         {
-            this.MapResults(source, methodGenerationContext, methodSymbol, parameters, itemType, hasNullableAnnotations, isList, isTask);
+            if (!methodGenerationContext.UseDbConnection && (isList && (IsTuple(itemType) || IsScalarType(itemType))))
+            {
+                source.Append($@"{this.GetOpenConnectionStatement(methodGenerationContext)}
+            try
+            {{
+");
+                source.PushIndent();
+                this.MapResults(source, methodGenerationContext, methodSymbol, parameters, itemType, hasNullableAnnotations, isList, isTask);
+
+                source.PopIndent();
+                source.Append($@"}}
+            finally
+            {{
+                {this.GetCloseConnectionStatement(methodGenerationContext)}
+            }}
+");
+            }
+            else
+            {
+                this.MapResults(source, methodGenerationContext, methodSymbol, parameters, itemType, hasNullableAnnotations, isList, isTask);
+            }
+
             MarshalOutputParameters(source, parameters, hasNullableAnnotations);
             source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
         }
