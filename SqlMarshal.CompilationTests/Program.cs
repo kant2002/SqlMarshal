@@ -6,6 +6,7 @@
 
 namespace SqlMarshal.CompilationTests;
 
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data.Common;
 using System.Linq;
@@ -14,18 +15,21 @@ using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
 
 internal class Program
 {
+    private const string ConnectionString = "server=(localdb)\\mssqllocaldb;database=sqlmarshal_sample;integrated security=true";
+
     private static void Main(string[] args)
     {
         Console.WriteLine("SqlMarshal sample application!");
 
         TestSqlClient();
+        TestDbContext();
     }
 
     private static void TestSqlClient()
     {
         Console.WriteLine("**** Testing Sql client! ****");
 
-        using var sqlConnection = new SqlConnection("server=(localdb)\\mssqllocaldb;database=sqlmarshal_sample;integrated security=true");
+        using var sqlConnection = new SqlConnection(ConnectionString);
         var connectionManager = new ConnectionManager(sqlConnection);
         try
         {
@@ -87,7 +91,33 @@ internal class Program
         }
     }
 
+    private static void TestDbContext()
+    {
+        Console.WriteLine("**** Testing Db Context! ****");
+        var options = new DbContextOptionsBuilder<PersonDbContext>().UseSqlServer(ConnectionString).Options;
+        var manager = new DbContextManager(new PersonDbContext(options));
+
+        var persons = manager.GetResult();
+        WriteLine("Print first 10 rows from persons_list SP");
+        foreach (var personInfo in persons.Take(10))
+        {
+            WritePerson(personInfo);
+        }
+
+        var persons4 = manager.GetTupleResult();
+        WriteLine("Print first 10 rows from persons_list SP using tuples");
+        foreach (var personInfo in persons4.Take(10))
+        {
+            WriteLine($"Name: {personInfo.Name} (#{personInfo.Id})");
+        }
+    }
+
     private static void WritePerson(PersonInformation personInfo)
+    {
+        WriteLine($"Name: {personInfo.PersonName} (#{personInfo.PersonId})");
+    }
+
+    private static void WritePerson(PersonDbContext.Person personInfo)
     {
         WriteLine($"Name: {personInfo.PersonName} (#{personInfo.PersonId})");
     }

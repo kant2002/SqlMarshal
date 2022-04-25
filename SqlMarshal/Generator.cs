@@ -810,6 +810,8 @@ namespace {namespaceName}
                 source.PushIndent();
                 this.MapResults(source, methodGenerationContext, methodSymbol, parameters, itemType, hasNullableAnnotations, isList, isTask);
 
+                MarshalOutputParameters(source, parameters, hasNullableAnnotations);
+                source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
                 source.PopIndent();
                 source.Append($@"}}
             finally
@@ -821,10 +823,9 @@ namespace {namespaceName}
             else
             {
                 this.MapResults(source, methodGenerationContext, methodSymbol, parameters, itemType, hasNullableAnnotations, isList, isTask);
+                MarshalOutputParameters(source, parameters, hasNullableAnnotations);
+                source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
             }
-
-            MarshalOutputParameters(source, parameters, hasNullableAnnotations);
-            source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
         }
 
         source.PopIndent();

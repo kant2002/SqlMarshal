@@ -1349,12 +1349,12 @@ namespace Foo
                 }
 
                 reader.Close();
+                return result;
             }
             finally
             {
                 this.dbContext.Database.CloseConnection();
             }
-            return result;
         }
     }
 }";
@@ -1418,12 +1418,12 @@ namespace Foo
                 }
 
                 reader.Close();
+                return result;
             }
             finally
             {
                 this.dbContext.Database.CloseConnection();
             }
-            return result;
         }
     }
 }";
