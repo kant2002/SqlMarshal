@@ -4,20 +4,19 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace SqlMarshal.Tests
+namespace SqlMarshal.Tests;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+[TestClass]
+public class NameMapperTests
 {
-    using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-    [TestClass]
-    public class NameMapperTests
+    [DataTestMethod]
+    [DataRow("personId", "person_id")]
+    public void MyTestMethod(string parameterName, string expectedStoredProcedureParameter)
     {
-        [DataTestMethod]
-        [DataRow("personId", "person_id")]
-        public void MyTestMethod(string parameterName, string expectedStoredProcedureParameter)
-        {
-            var storedProcedureParameter = NameMapper.MapName(parameterName);
+        var storedProcedureParameter = NameMapper.MapName(parameterName);
 
-            Assert.AreEqual(expectedStoredProcedureParameter, storedProcedureParameter);
-        }
+        Assert.AreEqual(expectedStoredProcedureParameter, storedProcedureParameter);
     }
 }

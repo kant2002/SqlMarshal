@@ -4,63 +4,62 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace SqlMarshal
+namespace SqlMarshal;
+
+using Microsoft.CodeAnalysis;
+
+internal static class Extensions
 {
-    using Microsoft.CodeAnalysis;
-
-    internal static class Extensions
+    public static bool CanHaveNullValue(this ITypeSymbol typeSymbol, bool hasNullableAnnotations)
     {
-        public static bool CanHaveNullValue(this ITypeSymbol typeSymbol, bool hasNullableAnnotations)
+        if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
         {
-            if (typeSymbol.NullableAnnotation == NullableAnnotation.Annotated)
-            {
-                return true;
-            }
-
-            var requireParameterNullCheck = !hasNullableAnnotations && !typeSymbol.IsValueType;
-            return requireParameterNullCheck;
+            return true;
         }
 
-        internal static bool IsDbConnection(this ITypeSymbol typeSymbol)
+        var requireParameterNullCheck = !hasNullableAnnotations && !typeSymbol.IsValueType;
+        return requireParameterNullCheck;
+    }
+
+    internal static bool IsDbConnection(this ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol.Name == "DbConnection")
         {
-            if (typeSymbol.Name == "DbConnection")
-            {
-                return true;
-            }
-
-            var baseType = typeSymbol.BaseType;
-            if (baseType == null)
-            {
-                return false;
-            }
-
-            return IsDbConnection(baseType);
+            return true;
         }
 
-        internal static bool IsDbContext(this ITypeSymbol typeSymbol)
+        var baseType = typeSymbol.BaseType;
+        if (baseType == null)
         {
-            if (typeSymbol.Name == "DbContext")
-            {
-                return true;
-            }
-
-            var baseType = typeSymbol.BaseType;
-            if (baseType == null)
-            {
-                return false;
-            }
-
-            return IsDbContext(baseType);
-        }
-
-        internal static bool IsCancellationToken(this ITypeSymbol typeSymbol)
-        {
-            if (typeSymbol.Name == "CancellationToken")
-            {
-                return true;
-            }
-
             return false;
         }
+
+        return IsDbConnection(baseType);
+    }
+
+    internal static bool IsDbContext(this ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol.Name == "DbContext")
+        {
+            return true;
+        }
+
+        var baseType = typeSymbol.BaseType;
+        if (baseType == null)
+        {
+            return false;
+        }
+
+        return IsDbContext(baseType);
+    }
+
+    internal static bool IsCancellationToken(this ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol.Name == "CancellationToken")
+        {
+            return true;
+        }
+
+        return false;
     }
 }

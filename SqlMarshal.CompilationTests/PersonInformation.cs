@@ -4,12 +4,11 @@
 // </copyright>
 // -----------------------------------------------------------------------
 
-namespace SqlMarshal.CompilationTests
-{
-    internal class PersonInformation
-    {
-        public int PersonId { get; set; }
+namespace SqlMarshal.CompilationTests;
 
-        public string? PersonName { get; set; }
-    }
+internal class PersonInformation
+{
+    public int PersonId { get; set; }
+
+    public string? PersonName { get; set; }
 }
