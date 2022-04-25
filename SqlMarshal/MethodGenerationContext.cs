@@ -9,6 +9,7 @@ namespace SqlMarshal;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using static SqlMarshal.Extensions;
 
 internal class MethodGenerationContext
 {
@@ -60,6 +61,14 @@ internal class MethodGenerationContext
     internal IParameterSymbol? CancellationTokenParameter { get; }
 
     internal ImmutableArray<IParameterSymbol> SqlParameters { get; }
+
+    internal bool IsTask => this.MethodSymbol.ReturnType.Name == "Task";
+
+    internal ITypeSymbol ReturnType => this.MethodSymbol.ReturnType.UnwrapTaskType();
+
+    internal bool IsList => this.ItemType != this.ReturnType;
+
+    internal ITypeSymbol ItemType => UnwrapListItem(this.ReturnType);
 
     private static IParameterSymbol? GetConnectionParameter(IMethodSymbol methodSymbol)
     {

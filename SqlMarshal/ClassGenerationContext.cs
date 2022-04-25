@@ -9,6 +9,7 @@ namespace SqlMarshal;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using static SqlMarshal.Extensions;
 
 internal class ClassGenerationContext
 {
@@ -42,6 +43,8 @@ internal class ClassGenerationContext
     public IFieldSymbol? DbContextField { get; }
 
     public bool HasEfCore => this.ConnectionField == null && this.Methods.All(_ => _.ConnectionParameter == null);
+
+    public bool HasCollections => !this.HasEfCore || this.Methods.Any(_ => _.IsList && (IsScalarType(_.ItemType) || IsTuple(_.ItemType)));
 
     private static IFieldSymbol? GetConnectionField(INamedTypeSymbol classSymbol)
     {

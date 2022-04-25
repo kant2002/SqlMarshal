@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
+using static SqlMarshal.Extensions;
 
 /// <summary>
 /// Stored procedures generator.
@@ -110,16 +111,6 @@ internal sealed class RawSqlAttribute: System.Attribute
         };
     }
 
-    private static INamedTypeSymbol GetUnderlyingType(INamedTypeSymbol namedTypeSymbol)
-    {
-        if (namedTypeSymbol.Name == "Nullable")
-        {
-            return (INamedTypeSymbol)namedTypeSymbol.TypeArguments[0];
-        }
-
-        return namedTypeSymbol;
-    }
-
     private static ISymbol? GetDbSetField(IFieldSymbol? dbContextSymbol, ITypeSymbol itemTypeSymbol)
     {
         if (dbContextSymbol == null)
@@ -133,7 +124,7 @@ internal sealed class RawSqlAttribute: System.Attribute
             var fieldType = fieldSymbol.Type;
             if (fieldType is INamedTypeSymbol namedTypeSymbol)
             {
-                namedTypeSymbol = GetUnderlyingType(namedTypeSymbol);
+                namedTypeSymbol = namedTypeSymbol.UnwrapNullableType();
                 if (namedTypeSymbol.Name == "DbSet"
                     && namedTypeSymbol.TypeArguments.Length == 1
                     && namedTypeSymbol.TypeArguments[0].Name == itemTypeSymbol.Name)
@@ -144,42 +135,6 @@ internal sealed class RawSqlAttribute: System.Attribute
         }
 
         return null;
-    }
-
-    private static ITypeSymbol GetUnderlyingType(ITypeSymbol returnType)
-    {
-        if (returnType is INamedTypeSymbol namedTypeSymbol)
-        {
-            if (!namedTypeSymbol.IsGenericType || namedTypeSymbol.TypeArguments.Length != 1)
-            {
-                return returnType;
-            }
-
-            return namedTypeSymbol.TypeArguments[0];
-        }
-
-        return returnType;
-    }
-
-    private static bool IsScalarType(ITypeSymbol returnType)
-    {
-        return returnType.SpecialType switch
-        {
-            SpecialType.System_String => true,
-            SpecialType.System_Boolean => true,
-            SpecialType.System_Byte => true,
-            SpecialType.System_Int32 => true,
-            SpecialType.System_Int64 => true,
-            SpecialType.System_DateTime => true,
-            SpecialType.System_Decimal => true,
-            SpecialType.System_Double => true,
-            _ => false,
-        };
-    }
-
-    private static bool IsTuple(ITypeSymbol returnType)
-    {
-        return returnType.Name == "Tuple" || returnType.Name == "ValueTuple";
     }
 
     private static string GetParameterDeclaration(IMethodSymbol methodSymbol, IParameterSymbol parameter, int index)
@@ -345,7 +300,7 @@ internal sealed class RawSqlAttribute: System.Attribute
         if (returnType.CanHaveNullValue(hasNullableAnnotations))
         {
             var nonNullExpression = CastExpression(
-                ParseTypeName(GetUnderlyingType(returnType).ToDisplayString()),
+                ParseTypeName(UnwrapNullableType(returnType).ToDisplayString()),
                 IdentifierName(identifier));
             var nullExpression = CastExpression(
                 ParseTypeName(returnType.ToDisplayString()),
@@ -362,7 +317,7 @@ internal sealed class RawSqlAttribute: System.Attribute
                 nullableReturnType += "?";
             }
 
-            return $@"{identifier} == DBNull.Value ? ({nullableReturnType})null : ({GetUnderlyingType(returnType).ToDisplayString()}){identifier}";
+            return $@"{identifier} == DBNull.Value ? ({nullableReturnType})null : ({UnwrapNullableType(returnType).ToDisplayString()}){identifier}";
         }
         else
         {
@@ -440,7 +395,7 @@ namespace {namespaceName}
 ");
         source.PushIndent();
         source.AppendLine("using System;");
-        if (!hasEfCore)
+        if (classGenerationContext.HasCollections)
         {
             source.AppendLine("using System.Collections.Generic;");
         }
@@ -556,7 +511,7 @@ namespace {namespaceName}
         bool isList,
         bool isTask)
     {
-        var useDbConnection = methodGenerationContext.UseDbConnection;
+        var useDbConnection = methodGenerationContext.UseDbConnection || (isList && (IsTuple(itemType) || IsScalarType(itemType)));
         var cancellationToken = methodGenerationContext.CancellationTokenParameter?.Name ?? string.Empty;
         if (useDbConnection)
         {
@@ -724,13 +679,9 @@ namespace {namespaceName}
     {
         // get the name and type of the field
         string fieldName = methodSymbol.Name;
-        ITypeSymbol returnType = methodSymbol.ReturnType;
+        ITypeSymbol returnType = methodGenerationContext.ReturnType;
         var symbol = (ISymbol)methodSymbol;
-        var isTask = returnType.Name == "Task";
-        if (isTask)
-        {
-            returnType = GetUnderlyingType(returnType);
-        }
+        var isTask = methodGenerationContext.IsTask;
 
         // get the AutoNotify attribute from the field, and any associated data
         AttributeData attributeData = methodSymbol.GetAttributes().Single(ad => ad.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default));
@@ -742,13 +693,13 @@ namespace {namespaceName}
 
         bool hasCustomSql = methodGenerationContext.CustomSqlParameter != null;
         var signature = $"({string.Join(", ", originalParameters.Select((parameterSymbol, index) => GetParameterDeclaration(methodSymbol, parameterSymbol, index)))})";
-        var itemType = GetUnderlyingType(returnType);
+        var itemType = methodGenerationContext.ItemType;
         var getConnection = this.GetConnectionStatement(methodGenerationContext);
-        var returnTypeName = methodSymbol.ReturnType.ToString();
-        var isList = itemType != returnType;
+        var isList = methodGenerationContext.IsList;
         var isScalarType = IsScalarType(UnwrapNullableType(returnType))
             || returnType.SpecialType == SpecialType.System_Void
             || returnType.Name == "Task";
+        var returnTypeName = methodSymbol.ReturnType.ToString();
         if (!hasNullableAnnotations && methodSymbol.ReturnType.IsReferenceType && !isScalarType && !isList)
         {
             if (methodSymbol.ReturnType.Name == "Task")
@@ -806,7 +757,7 @@ namespace {namespaceName}
         }
 
         bool useDbConnection = methodGenerationContext.UseDbConnection;
-        var requireDbCommandParameters = isScalarType || useDbConnection;
+        var requireDbCommandParameters = isScalarType || useDbConnection || IsTuple(itemType) || IsScalarType(itemType);
         if (requireDbCommandParameters)
         {
             if (!hasCustomSql)
