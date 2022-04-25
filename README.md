@@ -17,6 +17,7 @@ Database connection can be used from the DbContext of DbConnection objects.
     - [Output parameters](#Output-parameters)
     - [Procedure which returns single row](#Procedure-which-returns-single-row)
     - [Scalar resuls](#Scalar-resuls)
+    - [Sequences](#Sequence-resuls)
     - [INSERT or UPDATE](#Without-results)
 - [DbContext examples](#dbcontext-examples)
     - [Stored procedures which returns resultset](#stored-procedures-which-returns-resultset-1)
@@ -175,6 +176,31 @@ public partial class DataContext
 ```
 
 This code translated to `EXEC total_orders @client_id`. Instead of executing over data reader, ExecuteScalar called. 
+
+### Sequence resuls
+
+```
+public partial class DataContext
+{
+    private DbConnection connection;
+
+    [SqlMarshal("total_orders")]
+    public partial IList<string> GetStrings(int clientId);
+}
+```
+
+This code translated to `EXEC total_orders @client_id`. First columns of the returning result set mapped to the sequence.
+If you want return more then one columns, and do not want create classes, you can use tuples
+
+```
+public partial class DataContext
+{
+    private DbConnection connection;
+
+    [SqlMarshal("total_orders")]
+    public partial IList<(string, int)> GetPairs(int clientId);
+}
+```
 
 ### Without results
 

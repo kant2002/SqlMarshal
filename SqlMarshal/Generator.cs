@@ -177,6 +177,11 @@ internal sealed class RawSqlAttribute: System.Attribute
         };
     }
 
+    private static bool IsTuple(ITypeSymbol returnType)
+    {
+        return returnType.Name == "Tuple" || returnType.Name == "ValueTuple";
+    }
+
     private static string GetParameterDeclaration(IMethodSymbol methodSymbol, IParameterSymbol parameter, int index)
     {
         if (parameter.RefKind == RefKind.Out)
@@ -208,16 +213,22 @@ internal sealed class RawSqlAttribute: System.Attribute
         return "@" + parameterName;
     }
 
-    private static string GetParameterSqlDbType(ITypeSymbol type)
+    private static ITypeSymbol UnwrapNullableType(ITypeSymbol type)
     {
         if (type is INamedTypeSymbol namedTypeSymbol)
         {
             if (type.Name == "Nullable")
             {
-                return GetParameterSqlDbType(namedTypeSymbol.TypeArguments[0]);
+                return namedTypeSymbol.TypeArguments[0];
             }
         }
 
+        return type;
+    }
+
+    private static string GetParameterSqlDbType(ITypeSymbol type)
+    {
+        type = UnwrapNullableType(type);
         switch (type.SpecialType)
         {
             case SpecialType.System_String:
@@ -251,14 +262,7 @@ internal sealed class RawSqlAttribute: System.Attribute
 
     private static string GetDataReaderMethod(ITypeSymbol type)
     {
-        if (type is INamedTypeSymbol namedTypeSymbol)
-        {
-            if (type.Name == "Nullable")
-            {
-                return GetParameterSqlDbType(namedTypeSymbol.TypeArguments[0]);
-            }
-        }
-
+        type = UnwrapNullableType(type);
         switch (type.SpecialType)
         {
             case SpecialType.System_String:
@@ -580,7 +584,7 @@ namespace {namespaceName}
 
             if (isList)
             {
-                source.AppendLine($@"var result = new List<{itemType.Name}>();");
+                source.AppendLine($@"var result = new List<{(IsTuple(itemType) ? itemType.ToDisplayString() : itemType.Name)}>();");
                 if (isTask)
                 {
                     source.AppendLine($"while (await reader.ReadAsync({cancellationToken}).ConfigureAwait(false))");
@@ -592,17 +596,52 @@ namespace {namespaceName}
 
                 source.AppendLine("{");
                 source.PushIndent();
-                source.AppendLine($@"var item = new {itemType.Name}();");
-                int i = 0;
-                foreach (var propertyName in itemType.GetMembers().OfType<IPropertySymbol>())
+                if (IsScalarType(itemType))
                 {
-                    var dataReaderMethodName = GetDataReaderMethod(propertyName.Type);
-                    source.AppendLine($@"var value_{i} = reader.GetValue({i});");
-                    source.AppendLine($@"item.{propertyName.Name} = {MarshalValue($"value_{i}", hasNullableAnnotations, propertyName.Type)};");
-                    i++;
+                    source.AppendLine($@"var value_0 = reader.GetValue(0);");
+                    source.AppendLine($@"var item = {MarshalValue($"value_0", hasNullableAnnotations, itemType)};");
+                    source.AppendLine("result.Add(item);");
+                }
+                else if (IsTuple(itemType))
+                {
+                    var types = ((INamedTypeSymbol)itemType).TypeArguments;
+                    for (var i = 0; i < types.Length; i++)
+                    {
+                        source.AppendLine($@"var value_{i} = reader.GetValue({i});");
+                    }
+
+                    source.AppendLine("result.Add((");
+                    source.PushIndent();
+                    for (var i = 0; i < types.Length; i++)
+                    {
+                        if (i < types.Length - 1)
+                        {
+                            source.AppendLine($@"{MarshalValue($"value_{i}", hasNullableAnnotations, types[i])},");
+                        }
+                        else
+                        {
+                            source.AppendLine($@"{MarshalValue($"value_{i}", hasNullableAnnotations, types[i])}");
+                        }
+                    }
+
+                    source.PopIndent();
+                    source.AppendLine("));");
+                }
+                else
+                {
+                    source.AppendLine($@"var item = new {itemType.Name}();");
+                    int i = 0;
+                    foreach (var propertyName in itemType.GetMembers().OfType<IPropertySymbol>())
+                    {
+                        var dataReaderMethodName = GetDataReaderMethod(propertyName.Type);
+                        source.AppendLine($@"var value_{i} = reader.GetValue({i});");
+                        source.AppendLine($@"item.{propertyName.Name} = {MarshalValue($"value_{i}", hasNullableAnnotations, propertyName.Type)};");
+                        i++;
+                    }
+
+                    source.AppendLine("result.Add(item);");
                 }
 
-                source.AppendLine("result.Add(item);");
                 source.PopIndent();
                 source.AppendLine("}");
                 source.AppendLine();
@@ -707,7 +746,7 @@ namespace {namespaceName}
         var getConnection = this.GetConnectionStatement(methodGenerationContext);
         var returnTypeName = methodSymbol.ReturnType.ToString();
         var isList = itemType != returnType;
-        var isScalarType = IsScalarType(GetUnderlyingType(returnType))
+        var isScalarType = IsScalarType(UnwrapNullableType(returnType))
             || returnType.SpecialType == SpecialType.System_Void
             || returnType.Name == "Task";
         if (!hasNullableAnnotations && methodSymbol.ReturnType.IsReferenceType && !isScalarType && !isList)
