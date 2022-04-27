@@ -19,6 +19,7 @@ Database connection can be used from the DbContext of DbConnection objects.
     - [Scalar resuls](#Scalar-resuls)
     - [Sequences](#Sequence-resuls)
     - [INSERT or UPDATE](#Without-results)
+    - [Join transactions](#Join-transactions)
 - [DbContext examples](#dbcontext-examples)
     - [Stored procedures which returns resultset](#stored-procedures-which-returns-resultset-1)
     - [Adding parameters](#Adding-parameters-1)
@@ -26,6 +27,7 @@ Database connection can be used from the DbContext of DbConnection objects.
     - [Procedure which returns single row](#Procedure-which-returns-single-row-1)
     - [Scalar resuls](#Scalar-resuls-1)
     - [INSERT or UPDATE](#Without-results-1)
+    - [Join transactions](#Join-transactions-1)
 - [Alternative options](#Alternative-options)
     - [Async methods](#Async-methods)
     - [Nullable parameters](#Nullable-parameters)
@@ -202,6 +204,10 @@ public partial class DataContext
 }
 ```
 
+### Join transactions
+
+Not implemented.
+
 ### Without results
 
 ```
@@ -303,6 +309,10 @@ public partial class DataContext
 ```
 
 This code translated to `EXEC process_data @year`. No data was returned, ExecuteNonQuery called. 
+
+### Join transactions
+
+Generated code automatically join any transaction opened using `DbContext.Database.BeginTransaction()`.
 
 
 ## Alternative options
