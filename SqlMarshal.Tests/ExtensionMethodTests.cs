@@ -306,6 +306,7 @@ namespace Foo
     using System.Data.Common;
     using System.Linq;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Storage;
 
     static partial class C
     {
@@ -331,6 +332,7 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
+            command.Transaction = context.Database.CurrentTransaction?.GetDbTransaction();
             context.Database.OpenConnection();
             try
             {

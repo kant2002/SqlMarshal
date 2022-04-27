@@ -405,6 +405,7 @@ namespace {namespaceName}
         if (hasEfCore)
         {
             source.AppendLine("using Microsoft.EntityFrameworkCore;");
+            source.AppendLine("using Microsoft.EntityFrameworkCore.Storage;");
         }
 
         source.AppendLine();
@@ -480,6 +481,25 @@ namespace {namespaceName}
         var dbContextSymbol = methodGenerationContext.ClassGenerationContext.DbContextField;
         var contextName = dbContextSymbol?.Name ?? "dbContext";
         return $"this.{contextName}.Database.OpenConnection();";
+    }
+
+    private string GetDbTransactionStatement(MethodGenerationContext methodGenerationContext)
+    {
+        var dbContextParameterSymbol = methodGenerationContext.DbContextParameter;
+        if (dbContextParameterSymbol != null)
+        {
+            return $"command.Transaction = {dbContextParameterSymbol.Name}.Database.CurrentTransaction?.GetDbTransaction();";
+        }
+
+        var connectionSymbol = methodGenerationContext.ClassGenerationContext.ConnectionField;
+        if (connectionSymbol != null)
+        {
+            return string.Empty;
+        }
+
+        var dbContextSymbol = methodGenerationContext.ClassGenerationContext.DbContextField;
+        var contextName = dbContextSymbol?.Name ?? "dbContext";
+        return $"command.Transaction = this.{contextName}.Database.CurrentTransaction?.GetDbTransaction();";
     }
 
     private string GetCloseConnectionStatement(MethodGenerationContext methodGenerationContext)
@@ -783,6 +803,7 @@ namespace {namespaceName}
             }
             else
             {
+                source.AppendLine(this.GetDbTransactionStatement(methodGenerationContext));
                 source.Append($@"{this.GetOpenConnectionStatement(methodGenerationContext)}
             try
             {{
@@ -803,6 +824,7 @@ namespace {namespaceName}
         {
             if (!methodGenerationContext.UseDbConnection && (isList && (IsTuple(itemType) || IsScalarType(itemType))))
             {
+                source.AppendLine(this.GetDbTransactionStatement(methodGenerationContext));
                 source.Append($@"{this.GetOpenConnectionStatement(methodGenerationContext)}
             try
             {{

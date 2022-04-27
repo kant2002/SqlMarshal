@@ -244,6 +244,7 @@ namespace Foo
     using System.Data.Common;
     using System.Linq;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Storage;
 
     partial class C
     {

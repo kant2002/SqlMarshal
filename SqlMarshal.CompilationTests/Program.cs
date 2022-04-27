@@ -95,7 +95,8 @@ internal class Program
     {
         Console.WriteLine("**** Testing Db Context! ****");
         var options = new DbContextOptionsBuilder<PersonDbContext>().UseSqlServer(ConnectionString).Options;
-        var manager = new DbContextManager(new PersonDbContext(options));
+        PersonDbContext context = new PersonDbContext(options);
+        var manager = new DbContextManager(context);
 
         var persons = manager.GetResult();
         WriteLine("Print first 10 rows from persons_list SP");
@@ -109,6 +110,19 @@ internal class Program
         foreach (var personInfo in persons4.Take(10))
         {
             WriteLine($"Name: {personInfo.Name} (#{personInfo.Id})");
+        }
+
+        Console.WriteLine("**** Testing Transactions methods ! ****");
+        using (var transaction = context.Database.BeginTransaction())
+        {
+            var persons5 = manager.GetTupleResult();
+            WriteLine("Print first 10 rows from persons_list SP using tuples");
+            foreach (var personInfo in persons5.Take(10))
+            {
+                WriteLine($"Name: {personInfo.Name} (#{personInfo.Id})");
+            }
+
+            transaction.Commit();
         }
     }
 
