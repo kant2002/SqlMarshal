@@ -8,6 +8,48 @@ NativeAOT-friendly mini-ORM which care about nullability checks.
 This project generates typed functions for accessing custom SQL and stored procedures. Goal of this project to be AOT friendly.
 Database connection can be used from the DbContext of DbConnection objects.
 
+# How to use
+
+Add `SqlMarshal` Nuget package using
+
+```
+dotnet add package SqlMarshal
+```
+
+Then create your data context class inside your project.
+```
+public class PersonInformation
+{
+    public int PersonId { get; set; }
+
+    public string? PersonName { get; set; }
+}
+
+public partial class DataContext
+{
+    private DbConnection connection;
+
+    public DataContext(DbConnection connection) => this.connection = connection;
+
+    [SqlMarshal("persons_list")]
+    public partial IList<PersonInformation> GetPersons();
+
+    [SqlMarshal]
+    public partial IList<PersonInformation> GetPersonFromSql([RawSql]string sql, int id);
+}
+```
+
+# Temporary limitations or plans
+Current version of library has several limitations which not because it cannot be implemented reasonably,
+but because there was lack of time to think through all options. So I list all current limitations, so any user would be aware about them.
+I think about these options like about plan to implement them.
+
+- No ability to specify length of input/output string parameters, or type `varchar`/`nvarchar`.
+- Simplified ORM for just mapping object properties from DbDataReader
+- Ability to specify fields in code in the order different then returned from SQL.
+- Automatic generation of DbSet<T> inside DbContext, since when working with stored procedures this is most likely burden.
+- FormattableString support not implemented.
+
 # Examples
 
 - [DbConnection examples](#dbconnection-examples)
@@ -34,17 +76,6 @@ Database connection can be used from the DbContext of DbConnection objects.
     - [Bidirectional parameters](#Bidirectional-parameters)
     - [Pass connection as parameter](#Pass-connection-as-parameters)
     - [CancellationToken support](#CancellationToken-support)
-
-# Temporary limitations or plans
-Current version of library has several limitations which not because it cannot be implemented reasonably,
-but because there was lack of time to think through all options. So I list all current limitations, so any user would be aware about them.
-I think about these options like about plan to implement them.
-
-- No ability to specify length of input/output string parameters, or type `varchar`/`nvarchar`.
-- Simplified ORM for just mapping object properties from DbDataReader
-- Ability to specify fields in code in the order different then returned from SQL.
-- Automatic generation of DbSet<T> inside DbContext, since when working with stored procedures this is most likely burden.
-- FormattableString support not implemented.
 
 ## Managing connections
 
