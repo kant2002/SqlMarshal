@@ -17,7 +17,7 @@ dotnet add package SqlMarshal
 ```
 
 Then create your data context class inside your project.
-```
+```csharp
 public class PersonInformation
 {
     public int PersonId { get; set; }
@@ -81,7 +81,7 @@ I think about these options like about plan to implement them.
 
 Generated code does not interfere with the connection opening and closing. It is responsibility of developer to properly wrap code in the transaction and open connections.
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -124,7 +124,7 @@ At least right now generated code is visible and can be reason about.
 
 ### Stored procedures which returns resultset
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -140,7 +140,7 @@ same order as they are declared and read values from the row. Order different th
 
 ### Adding parameters
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -157,7 +157,7 @@ This code translated to `EXEC persons_search @name, @city`. Generated code do no
 If stored procedure seems to be overkill, then you can add string parameter with attribute [RawSql]
 and SQL passed to the function would be executed.
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -169,7 +169,7 @@ public partial class DataContext
 
 ### Output parameters
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -184,7 +184,7 @@ Value returned in the @total_count parameter, saved to the `int totalCount` vari
 
 ### Procedure which returns single row
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -198,7 +198,7 @@ This code translated to `EXEC persons_by_id @person_id`. From mapped result set 
 
 ### Scalar resuls
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -212,7 +212,7 @@ This code translated to `EXEC total_orders @client_id`. Instead of executing ove
 
 ### Sequence resuls
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -225,7 +225,7 @@ public partial class DataContext
 This code translated to `EXEC total_orders @client_id`. First columns of the returning result set mapped to the sequence.
 If you want return more then one columns, and do not want create classes, you can use tuples
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -241,7 +241,7 @@ Not implemented.
 
 ### Without results
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -257,7 +257,7 @@ This code translated to `EXEC process_data @year`. No data was returned, Execute
 
 ### Stored procedures which returns resultset
 
-```
+```csharp
 public partial class DataContext
 {
     private CustomDbContext dbContext;
@@ -272,7 +272,7 @@ Underlying assumption that in the custom context there definition of the `DbSet<
 
 ### Adding parameters
 
-```
+```csharp
 public partial class DataContext
 {
     private CustomDbContext dbContext;
@@ -286,7 +286,7 @@ This code translated to `EXEC persons_search @name, @city`. Generated code do no
 
 ### Output parameters
 
-```
+```csharp
 public partial class DataContext
 {
     private CustomDbContext dbContext;
@@ -301,7 +301,7 @@ Value returned in the @total_count parameter, saved to the `int totalCount` vari
 
 ### Procedure which returns single row
 
-```
+```csharp
 public partial class DataContext
 {
     private CustomDbContext dbContext;
@@ -315,7 +315,7 @@ This code translated to `EXEC persons_by_id @person_id`. From mapped result set 
 
 ### Scalar resuls
 
-```
+```csharp
 public partial class DataContext
 {
     private CustomDbContext dbContext;
@@ -329,7 +329,7 @@ This code translated to `EXEC total_orders @client_id`. Instead of executing ove
 
 ### Without results
 
-```
+```csharp
 public partial class DataContext
 {
     private CustomDbContext dbContext;
@@ -350,7 +350,7 @@ Generated code automatically join any transaction opened using `DbContext.Databa
 
 ### Async methods
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -362,7 +362,7 @@ public partial class DataContext
 
 or
 
-```
+```csharp
 public partial class DataContext
 {
     private CustomDbContext dbContext;
@@ -377,7 +377,7 @@ public partial class DataContext
 The codegen honor nullable parameters. If you specify parameter as non-nullable, it will not work with NULL values in the database,
 if you specify that null allowed, it properly convert NULL to null values in C#.
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -392,7 +392,7 @@ public partial class DataContext
 If you have parameters which act as input and output parameters, you can specify them as `ref` values.
 Codegen read values after SQL was executed.
 
-```
+```csharp
 public partial class DataContext
 {
     private DbConnection connection;
@@ -406,7 +406,7 @@ public partial class DataContext
 
 Instead of having DbConnection as a field of the class, it can be passed as parameter, and even be placed in the extension method.
 
-```
+```csharp
 public static partial class DataContext
 {
     [SqlMarshal("persons_list")]
@@ -422,7 +422,7 @@ public static partial class DataContext
 You can add CancellationToken inside your code and it would be propagated inside ADO.NET calls.
 You can use that with DbContext too.
 
-```
+```csharp
 public static partial class DataContext
 {
     [SqlMarshal("total_orders")]
