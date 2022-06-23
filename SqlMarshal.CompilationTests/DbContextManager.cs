@@ -7,6 +7,7 @@
 namespace SqlMarshal.CompilationTests;
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 internal partial class DbContextManager
 {
@@ -22,4 +23,10 @@ internal partial class DbContextManager
 
     [SqlMarshal("persons_list")]
     public partial IList<(int Id, string Name)> GetTupleResult();
+
+    [SqlMarshal("persons_list")]
+    public partial Task<IList<PersonDbContext.Person>> GetResultAsync();
+
+    [SqlMarshal("persons_list")]
+    public partial Task<IList<(int Id, string Name)>> GetTupleResultAsync();
 }

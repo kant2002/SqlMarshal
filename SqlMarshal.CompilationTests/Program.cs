@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Data.Common;
 using System.Linq;
+using System.Threading.Tasks;
 using static System.Console;
 using SqlConnection = Microsoft.Data.SqlClient.SqlConnection;
 
@@ -17,12 +18,13 @@ internal class Program
 {
     private const string ConnectionString = "server=(localdb)\\mssqllocaldb;database=sqlmarshal_sample;integrated security=true";
 
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         Console.WriteLine("SqlMarshal sample application!");
 
         TestSqlClient();
         TestDbContext();
+        await TestDbContextAsync();
     }
 
     private static void TestSqlClient()
@@ -116,6 +118,41 @@ internal class Program
         using (var transaction = context.Database.BeginTransaction())
         {
             var persons5 = manager.GetTupleResult();
+            WriteLine("Print first 10 rows from persons_list SP using tuples");
+            foreach (var personInfo in persons5.Take(10))
+            {
+                WriteLine($"Name: {personInfo.Name} (#{personInfo.Id})");
+            }
+
+            transaction.Commit();
+        }
+    }
+
+    private static async Task TestDbContextAsync()
+    {
+        Console.WriteLine("**** Testing Db Context Async! ****");
+        var options = new DbContextOptionsBuilder<PersonDbContext>().UseSqlServer(ConnectionString).Options;
+        PersonDbContext context = new PersonDbContext(options);
+        var manager = new DbContextManager(context);
+
+        var persons = await manager.GetResultAsync();
+        WriteLine("Print first 10 rows from persons_list SP");
+        foreach (var personInfo in persons.Take(10))
+        {
+            WritePerson(personInfo);
+        }
+
+        var persons4 = await manager.GetTupleResultAsync();
+        WriteLine("Print first 10 rows from persons_list SP using tuples");
+        foreach (var personInfo in persons4.Take(10))
+        {
+            WriteLine($"Name: {personInfo.Name} (#{personInfo.Id})");
+        }
+
+        Console.WriteLine("**** Testing Transactions methods ! ****");
+        using (var transaction = context.Database.BeginTransaction())
+        {
+            var persons5 = await manager.GetTupleResultAsync();
             WriteLine("Print first 10 rows from persons_list SP using tuples");
             foreach (var personInfo in persons5.Take(10))
             {
