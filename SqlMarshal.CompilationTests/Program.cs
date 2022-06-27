@@ -40,6 +40,8 @@ internal class Program
             TestConnectionManager(connectionManager);
             Console.WriteLine("**** Testing Extension methods ! ****");
             TestExtensionMethods(sqlConnection);
+            Console.WriteLine("**** Testing Data Reader methods ! ****");
+            TestDataReaderMethods(sqlConnection);
         }
         catch (DbException ex)
         {
@@ -55,6 +57,23 @@ internal class Program
         foreach (var personInfo in persons.Take(10))
         {
             WritePerson(personInfo);
+        }
+    }
+
+    private static void TestDataReaderMethods(DbConnection sqlConnection)
+    {
+        using var reader = sqlConnection.GetResultReader();
+        WriteLine("Print first 10 rows from persons_list SP");
+        int i = 0;
+        while (reader.Read() && i < 10)
+        {
+            var person = new PersonInformation()
+            {
+                PersonId = reader.GetInt32(0),
+                PersonName = reader.GetString(1),
+            };
+            WritePerson(person);
+            i++;
         }
     }
 

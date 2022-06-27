@@ -16,5 +16,8 @@ namespace SqlMarshal.CompilationTests
 
         [SqlMarshal("persons_by_page")]
         public static partial IList<PersonInformation> GetResultByPage(this DbConnection connection, int pageNo, out int totalCount);
+
+        [SqlMarshal("persons_list")]
+        public static partial DbDataReader GetResultReader(this DbConnection connection);
     }
 }
