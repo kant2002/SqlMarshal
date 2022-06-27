@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
@@ -726,7 +727,7 @@ namespace {namespaceName}
             {
                 returnTypeName = "Task<" + returnType + "?>";
             }
-            else
+            else if (!methodGenerationContext.IsDataReader)
             {
                 returnTypeName += "?";
             }
@@ -797,28 +798,15 @@ namespace {namespaceName}
 
         if (isScalarType)
         {
-            if (useDbConnection)
-            {
-                ExecuteSimpleQuery(source, methodGenerationContext, hasNullableAnnotations, isTask, returnType);
-            }
-            else
-            {
-                source.AppendLine(this.GetDbTransactionStatement(methodGenerationContext));
-                source.Append($@"{this.GetOpenConnectionStatement(methodGenerationContext)}
-            try
-            {{
-");
-                source.PushIndent();
-                ExecuteSimpleQuery(source, methodGenerationContext, hasNullableAnnotations, isTask, returnType);
-
-                source.PopIndent();
-                source.Append($@"}}
-            finally
-            {{
-                {this.GetCloseConnectionStatement(methodGenerationContext)}
-            }}
-");
-            }
+            this.GenerateScalarMethod(source, methodGenerationContext, hasNullableAnnotations, returnType);
+        }
+        else if (methodGenerationContext.IsDataReader)
+        {
+            var resultDeclaration = VariableDeclarator(identifier: Identifier("result"), argumentList: null, initializer: EqualsValueClause(ParseExpression("command.ExecuteReader()")));
+            source.AppendLine(LocalDeclarationStatement(VariableDeclaration(
+                type: IdentifierName(Identifier("var")),
+                variables: SeparatedList(new[] { resultDeclaration }))).NormalizeWhitespace().ToFullString());
+            source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
         }
         else
         {
@@ -854,6 +842,34 @@ namespace {namespaceName}
         source.PopIndent();
         source.PopIndent();
         source.AppendLine($@"        }}");
+    }
+
+    private void GenerateScalarMethod(IndentedStringBuilder source, MethodGenerationContext methodGenerationContext, bool hasNullableAnnotations, ITypeSymbol returnType)
+    {
+        var isTask = methodGenerationContext.IsTask;
+        bool useDbConnection = methodGenerationContext.UseDbConnection;
+        if (useDbConnection)
+        {
+            ExecuteSimpleQuery(source, methodGenerationContext, hasNullableAnnotations, isTask, returnType);
+        }
+        else
+        {
+            source.AppendLine(this.GetDbTransactionStatement(methodGenerationContext));
+            source.Append($@"{this.GetOpenConnectionStatement(methodGenerationContext)}
+            try
+            {{
+");
+            source.PushIndent();
+            ExecuteSimpleQuery(source, methodGenerationContext, hasNullableAnnotations, isTask, returnType);
+
+            source.PopIndent();
+            source.Append($@"}}
+            finally
+            {{
+                {this.GetCloseConnectionStatement(methodGenerationContext)}
+            }}
+");
+        }
     }
 
     internal class SyntaxReceiver : ISyntaxContextReceiver

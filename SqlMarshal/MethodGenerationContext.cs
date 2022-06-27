@@ -64,6 +64,8 @@ internal class MethodGenerationContext
 
     internal bool IsTask => this.MethodSymbol.ReturnType.Name == "Task";
 
+    internal bool IsDataReader => this.MethodSymbol.ReturnType.Name == "DbDataReader";
+
     internal ITypeSymbol ReturnType => this.MethodSymbol.ReturnType.UnwrapTaskType();
 
     internal bool IsList => this.ItemType != this.ReturnType;
