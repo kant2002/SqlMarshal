@@ -820,7 +820,7 @@ namespace Foo
             try
             {
                 var result = command.ExecuteScalar();
-                return (int)result;
+                return (int)result!;
             }
             finally
             {
@@ -950,7 +950,7 @@ namespace Foo
             try
             {
                 var result = command.ExecuteScalar();
-                return (int)result;
+                return (int)result!;
             }
             finally
             {
@@ -1026,7 +1026,7 @@ namespace Foo
             {
                 var result = command.ExecuteScalar();
                 personId = personIdParameter.Value == DBNull.Value ? (string?)null : (string?)personIdParameter.Value;
-                return (int)result;
+                return (int)result!;
             }
             finally
             {
@@ -1102,7 +1102,7 @@ namespace Foo
             {
                 var result = command.ExecuteScalar();
                 personId = personIdParameter.Value == DBNull.Value ? (string?)null : (string?)personIdParameter.Value;
-                return (int)result;
+                return (int)result!;
             }
             finally
             {
@@ -1178,7 +1178,7 @@ namespace Foo
             {
                 var result = command.ExecuteScalar();
                 personId = personIdParameter.Value == DBNull.Value ? (string?)null : (string)personIdParameter.Value;
-                return (int)result;
+                return (int)result!;
             }
             finally
             {
@@ -1253,7 +1253,7 @@ namespace Foo
             {
                 var result = command.ExecuteScalar();
                 personId = (int)personIdParameter.Value;
-                return (int)result;
+                return (int)result!;
             }
             finally
             {
@@ -1311,7 +1311,7 @@ namespace Foo
             try
             {
                 var result = command.ExecuteScalar();
-                return result == DBNull.Value ? (int?)null : (int)result;
+                return result! == DBNull.Value ? (int?)null : (int)result!;
             }
             finally
             {

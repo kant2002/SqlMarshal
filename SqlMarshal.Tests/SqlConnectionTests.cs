@@ -70,7 +70,7 @@ namespace Foo
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             var result = command.ExecuteScalar();
-            return (int)result;
+            return (int)result!;
         }
     }
 }";
@@ -137,7 +137,7 @@ namespace Foo
             command.Parameters.AddRange(parameters);
             var result = command.ExecuteScalar();
             personId = (int)personIdParameter.Value;
-            return (int)result;
+            return (int)result!;
         }
     }
 }";
@@ -204,7 +204,7 @@ namespace Foo
             command.Parameters.AddRange(parameters);
             var result = command.ExecuteScalar();
             personId = (int)personIdParameter.Value!;
-            return (int)result;
+            return (int)result!;
         }
     }
 }";
@@ -624,7 +624,7 @@ namespace Foo
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             var result = command.ExecuteScalar();
-            return (int)result;
+            return (int)result!;
         }
     }
 }";
@@ -691,7 +691,7 @@ namespace Foo
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             var result = command.ExecuteScalar();
-            return (int)result;
+            return (int)result!;
         }
     }
 }";

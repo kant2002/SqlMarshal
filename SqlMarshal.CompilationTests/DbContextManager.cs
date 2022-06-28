@@ -32,4 +32,16 @@ internal partial class DbContextManager
 
     [SqlMarshal("persons_list")]
     public partial Task<PersonDbContext.Person?> GetFirstOrDefaultAsync();
+
+    [SqlMarshal("non_existing")]
+    public partial int GetScalarResult();
+
+    [SqlMarshal("non_existing")]
+    public partial int? GetNullableScalarResult();
+
+    [SqlMarshal("non_existing")]
+    public partial Task<int> GetScalarResultAsync();
+
+    [SqlMarshal("non_existing")]
+    public partial Task<int?> GetNullableScalarResultAsync();
 }

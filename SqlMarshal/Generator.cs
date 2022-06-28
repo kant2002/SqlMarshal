@@ -364,7 +364,7 @@ internal sealed class RawSqlAttribute: System.Attribute
 
         if (hasResult)
         {
-            source.AppendLine($@"return {MarshalValue("result", hasNullableAnnotations, returnType)};");
+            source.AppendLine($@"return {MarshalValue("result!", hasNullableAnnotations, returnType)};");
         }
     }
 

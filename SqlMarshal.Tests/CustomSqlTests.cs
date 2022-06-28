@@ -69,7 +69,7 @@ namespace Foo
             command.CommandText = sql;
             command.Parameters.AddRange(parameters);
             var result = command.ExecuteScalar();
-            return (int)result;
+            return (int)result!;
         }
     }
 }";

@@ -68,7 +68,7 @@ namespace Foo
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             var result = await command.ExecuteScalarAsync().ConfigureAwait(false);
-            return (int)result;
+            return (int)result!;
         }
     }
 }";
@@ -131,7 +131,7 @@ namespace Foo
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             var result = await command.ExecuteScalarAsync().ConfigureAwait(false);
-            return (int)result;
+            return (int)result!;
         }
     }
 }";
@@ -194,7 +194,7 @@ namespace Foo
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             var result = await command.ExecuteScalarAsync().ConfigureAwait(false);
-            return (int)result;
+            return (int)result!;
         }
     }
 }";
@@ -337,7 +337,7 @@ namespace Foo
             try
             {
                 var result = command.ExecuteScalar();
-                return (int)result;
+                return (int)result!;
             }
             finally
             {

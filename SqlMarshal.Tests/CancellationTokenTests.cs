@@ -72,7 +72,7 @@ namespace Foo
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-            return (int)result;
+            return (int)result!;
         }
     }
 }";
