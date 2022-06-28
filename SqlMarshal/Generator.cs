@@ -682,7 +682,7 @@ namespace {namespaceName}
             var itemTypeProperty = GetDbSetField(dbContextSymbol, itemType)?.Name ?? itemType.Name + "s";
             if (isTask)
             {
-                source.AppendLine($"var result = await this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToListAsync" : "AsEnumerable().FirstOrDefaultAsync")}({cancellationToken}).ConfigureAwait(false);");
+                source.AppendLine($"var result = await this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToListAsync" : (methodGenerationContext.UseDbConnection ? "AsEnumerable().FirstOrDefaultAsync" : "FirstOrDefaultAsync"))}({cancellationToken}).ConfigureAwait(false);");
             }
             else
             {

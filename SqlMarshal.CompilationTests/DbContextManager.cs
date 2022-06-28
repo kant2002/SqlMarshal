@@ -29,4 +29,7 @@ internal partial class DbContextManager
 
     [SqlMarshal("persons_list")]
     public partial Task<IList<(int Id, string Name)>> GetTupleResultAsync();
+
+    [SqlMarshal("persons_list")]
+    public partial Task<PersonDbContext.Person?> GetFirstOrDefaultAsync();
 }

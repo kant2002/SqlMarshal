@@ -216,7 +216,7 @@ namespace Foo
     }
 
     [TestMethod]
-    public void MapSingleObjectToProcedure()
+    public void MapSingleObjectToProcedureFromDbContext()
     {
         string source = @"
 namespace Foo
@@ -255,7 +255,7 @@ namespace Foo
             using var command = connection.CreateCommand();
 
             var sqlQuery = @""sp_TestSP"";
-            var result = await this.dbContext.Items.FromSqlRaw(sqlQuery).AsEnumerable().FirstOrDefaultAsync().ConfigureAwait(false);
+            var result = await this.dbContext.Items.FromSqlRaw(sqlQuery).FirstOrDefaultAsync().ConfigureAwait(false);
             return result;
         }
     }
