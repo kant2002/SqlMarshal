@@ -255,7 +255,13 @@ namespace Foo
             using var command = connection.CreateCommand();
 
             var sqlQuery = @""sp_TestSP"";
-            var result = await this.dbContext.Items.FromSqlRaw(sqlQuery).FirstOrDefaultAsync().ConfigureAwait(false);
+            Item result = null!;
+            var asyncEnumerable = this.dbContext.Items.FromSqlRaw(sqlQuery).AsAsyncEnumerable();
+            await foreach (var current in asyncEnumerable)
+            {
+                result = current;
+                break;
+            }
             return result;
         }
     }

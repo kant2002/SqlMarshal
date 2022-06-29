@@ -161,6 +161,17 @@ internal class Program
             WritePerson(personInfo);
         }
 
+        WriteLine("Print first row from persons_list SP");
+        var firstPerson = await manager.GetFirstOrDefaultAsync();
+        if (firstPerson != null)
+        {
+            WritePerson(firstPerson);
+        }
+        else
+        {
+            WriteLine("No person returned");
+        }
+
         var persons4 = await manager.GetTupleResultAsync();
         WriteLine("Print first 10 rows from persons_list SP using tuples");
         foreach (var personInfo in persons4.Take(10))
