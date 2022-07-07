@@ -58,8 +58,8 @@ I think about these options like about plan to implement them.
     - [Executing SQL](#Executing-SQL)
     - [Output parameters](#Output-parameters)
     - [Procedure which returns single row](#Procedure-which-returns-single-row)
-    - [Scalar resuls](#Scalar-resuls)
-    - [Sequences](#Sequence-resuls)
+    - [Scalar results](#Scalar-results)
+    - [Sequences](#Sequence-results)
     - [INSERT or UPDATE](#Without-results)
     - [Join transactions](#Join-transactions)
 - [DbContext examples](#dbcontext-examples)
@@ -67,7 +67,7 @@ I think about these options like about plan to implement them.
     - [Adding parameters](#Adding-parameters-1)
     - [Output parameters](#Output-parameters-1)
     - [Procedure which returns single row](#Procedure-which-returns-single-row-1)
-    - [Scalar resuls](#Scalar-resuls-1)
+    - [Scalar results](#Scalar-results-1)
     - [INSERT or UPDATE](#Without-results-1)
     - [Join transactions](#Join-transactions-1)
 - [Alternative options](#Alternative-options)
@@ -196,7 +196,7 @@ public partial class DataContext
 
 This code translated to `EXEC persons_by_id @person_id`. From mapped result set taken just single item, first one.
 
-### Scalar resuls
+### Scalar results
 
 ```csharp
 public partial class DataContext
@@ -210,7 +210,7 @@ public partial class DataContext
 
 This code translated to `EXEC total_orders @client_id`. Instead of executing over data reader, ExecuteScalar called. 
 
-### Sequence resuls
+### Sequence results
 
 ```csharp
 public partial class DataContext
@@ -313,7 +313,7 @@ public partial class DataContext
 
 This code translated to `EXEC persons_by_id @person_id`. From mapped result set taken just single item, first one.
 
-### Scalar resuls
+### Scalar results
 
 ```csharp
 public partial class DataContext
