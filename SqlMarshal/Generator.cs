@@ -645,7 +645,7 @@ namespace {namespaceName}
                 source.PushIndent();
                 if (hasNullableAnnotations && methodSymbol.ReturnType.NullableAnnotation != NullableAnnotation.Annotated)
                 {
-                    source.AppendLine("throw new InvalidOperation(\"No data returned from command.\");");
+                    source.AppendLine("throw new InvalidOperationException(\"No data returned from command.\");");
                 }
                 else
                 {

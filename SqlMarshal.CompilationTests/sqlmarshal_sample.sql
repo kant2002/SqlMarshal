@@ -9,6 +9,13 @@ AS
 SELECT * from person
 GO
 
+CREATE OR ALTER PROCEDURE persons_by_id
+	@person_id int
+AS
+SELECT * from person
+WHERE person_id = @person_id
+GO
+
 CREATE OR ALTER PROCEDURE persons_by_page
 	@page_no int,
 	@total_count int OUTPUT
