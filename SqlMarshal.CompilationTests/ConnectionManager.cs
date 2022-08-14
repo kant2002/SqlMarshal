@@ -29,4 +29,7 @@ internal partial class ConnectionManager
 
     [SqlMarshal("")]
     public partial IList<PersonInformation> GetResultFromSql([RawSql]string sql, int maxId);
+
+    [SqlMarshal("persons_by_id")]
+    public partial PersonInformation GetPersonById(int personId);
 }

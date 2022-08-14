@@ -474,7 +474,7 @@ namespace Foo
             using var reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult | System.Data.CommandBehavior.SingleRow);
             if (!reader.Read())
             {
-                throw new InvalidOperation(""No data returned from command."");
+                throw new InvalidOperationException(""No data returned from command."");
             }
 
             var result = new Item();

@@ -110,6 +110,17 @@ internal class Program
         {
             WriteLine($"Name: {personInfo.Name} (#{personInfo.Id})");
         }
+
+        Write("Get person with id 33: ");
+        var person = connectionManager.GetPersonById(33);
+        if (person.PersonId == 33)
+        {
+            WriteLine("OK");
+        }
+        else
+        {
+            WriteLine("Failed");
+        }
     }
 
     private static void TestDbContext()
