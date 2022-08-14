@@ -74,7 +74,8 @@ I think about these options like about plan to implement them.
     - [Async methods](#Async-methods)
     - [Nullable parameters](#Nullable-parameters)
     - [Bidirectional parameters](#Bidirectional-parameters)
-    - [Pass connection as parameter](#Pass-connection-as-parameters)
+    - [Pass connection as parameter](#pass-connection-as-parameter)
+    - [Pass transaction as parameter](#pass-transaction-as-parameter)
     - [CancellationToken support](#CancellationToken-support)
 
 ## Managing connections
@@ -414,6 +415,21 @@ public static partial class DataContext
 
     [SqlMarshal("persons_by_id")]
     public static partial Item GetResults(DbConnection connection, int personId);
+}
+```
+
+### Pass transaction as parameter
+
+If you want finegrained control over transactions, if you pass `DbTransaction` as parameter, generated code will set it to `DbCommand` or EF context will join that transaction using `Database.UseTransaction`.
+
+```csharp
+public static partial class DataContext
+{
+    [SqlMarshal("persons_list")]
+    public static partial IList<Item> GetResult(DbTransaction tran);
+
+    [SqlMarshal("persons_by_id")]
+    public static partial Item GetResults(DbTransaction tran, int personId);
 }
 ```
 
