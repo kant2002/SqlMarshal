@@ -37,6 +37,22 @@ internal static class Extensions
         return IsDbConnection(baseType);
     }
 
+    internal static bool IsDbTransaction(this ITypeSymbol typeSymbol)
+    {
+        if (typeSymbol.Name == "DbTransaction")
+        {
+            return true;
+        }
+
+        var baseType = typeSymbol.BaseType;
+        if (baseType == null)
+        {
+            return false;
+        }
+
+        return IsDbTransaction(baseType);
+    }
+
     internal static bool IsDbContext(this ITypeSymbol typeSymbol)
     {
         if (typeSymbol.Name == "DbContext")

@@ -7,11 +7,12 @@
 namespace SqlMarshal.CompilationTests;
 
 using System.Collections.Generic;
+using System.Data.Common;
 using Microsoft.Data.SqlClient;
 
 internal partial class ConnectionManager
 {
-    private readonly SqlConnection connection;
+    private readonly DbConnection connection;
 
     public ConnectionManager(SqlConnection connection)
     {
@@ -32,4 +33,7 @@ internal partial class ConnectionManager
 
     [SqlMarshal("persons_by_id")]
     public partial PersonInformation GetPersonById(int personId);
+
+    [SqlMarshal("persons_list")]
+    public partial IList<PersonInformation> GetResult(DbTransaction tran);
 }

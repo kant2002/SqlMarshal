@@ -19,6 +19,7 @@ internal class MethodGenerationContext
         this.MethodSymbol = methodSymbol;
 
         this.ConnectionParameter = GetConnectionParameter(methodSymbol);
+        this.TransactionParameter = GetTransactionParameter(methodSymbol);
         this.DbContextParameter = GetDbContextParameter(methodSymbol);
         this.CustomSqlParameter = GetCustomSqlParameter(methodSymbol);
         this.CancellationTokenParameter = GetCancellationTokenParameter(methodSymbol);
@@ -31,6 +32,11 @@ internal class MethodGenerationContext
         if (this.DbContextParameter != null)
         {
             parameters = parameters.Remove(this.DbContextParameter);
+        }
+
+        if (this.TransactionParameter != null)
+        {
+            parameters = parameters.Remove(this.TransactionParameter);
         }
 
         if (this.CustomSqlParameter != null)
@@ -53,6 +59,8 @@ internal class MethodGenerationContext
     internal bool UseDbConnection => this.ClassGenerationContext.ConnectionField != null || this.ConnectionParameter != null;
 
     internal IParameterSymbol? ConnectionParameter { get; }
+
+    internal IParameterSymbol? TransactionParameter { get; }
 
     internal IParameterSymbol? DbContextParameter { get; }
 
@@ -77,6 +85,19 @@ internal class MethodGenerationContext
         foreach (var parameterSymbol in methodSymbol.Parameters)
         {
             if (parameterSymbol.Type.IsDbConnection())
+            {
+                return parameterSymbol;
+            }
+        }
+
+        return null;
+    }
+
+    private static IParameterSymbol? GetTransactionParameter(IMethodSymbol methodSymbol)
+    {
+        foreach (var parameterSymbol in methodSymbol.Parameters)
+        {
+            if (parameterSymbol.Type.IsDbTransaction())
             {
                 return parameterSymbol;
             }

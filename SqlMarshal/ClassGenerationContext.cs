@@ -42,6 +42,8 @@ internal class ClassGenerationContext
 
     public IFieldSymbol? DbContextField { get; }
 
+    public string DbContextName => this.DbContextField?.Name ?? "dbContext";
+
     public bool HasEfCore => this.ConnectionField == null && this.Methods.All(_ => _.ConnectionParameter == null);
 
     public bool HasCollections => !this.HasEfCore || this.Methods.Any(_ => _.IsList && (IsScalarType(_.ItemType) || IsTuple(_.ItemType)));

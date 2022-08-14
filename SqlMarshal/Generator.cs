@@ -460,8 +460,7 @@ namespace {namespaceName}
             return $"var connection = {dbContextParameterSymbol.Name}.Database.GetDbConnection();";
         }
 
-        var dbContextSymbol = methodGenerationContext.ClassGenerationContext.DbContextField;
-        var contextName = dbContextSymbol?.Name ?? "dbContext";
+        var contextName = methodGenerationContext.ClassGenerationContext.DbContextName;
         return $"var connection = this.{contextName}.Database.GetDbConnection();";
     }
 
@@ -479,13 +478,26 @@ namespace {namespaceName}
             return $"this.{connectionSymbol.Name}.Open();";
         }
 
-        var dbContextSymbol = methodGenerationContext.ClassGenerationContext.DbContextField;
-        var contextName = dbContextSymbol?.Name ?? "dbContext";
+        var contextName = methodGenerationContext.ClassGenerationContext.DbContextName;
         return $"this.{contextName}.Database.OpenConnection();";
     }
 
     private string GetDbTransactionStatement(MethodGenerationContext methodGenerationContext)
     {
+        var transactionParameterSymbol = methodGenerationContext.TransactionParameter;
+        if (transactionParameterSymbol != null)
+        {
+            if (methodGenerationContext.UseDbConnection)
+            {
+                return $"command.Transaction = {transactionParameterSymbol.Name};";
+            }
+            else
+            {
+                var dbContextName = methodGenerationContext.ClassGenerationContext.DbContextName;
+                return $"this.{dbContextName}.Database.UseTransaction({transactionParameterSymbol.Name});";
+            }
+        }
+
         var dbContextParameterSymbol = methodGenerationContext.DbContextParameter;
         if (dbContextParameterSymbol != null)
         {
@@ -498,8 +510,13 @@ namespace {namespaceName}
             return string.Empty;
         }
 
-        var dbContextSymbol = methodGenerationContext.ClassGenerationContext.DbContextField;
-        var contextName = dbContextSymbol?.Name ?? "dbContext";
+        var connectionParameterSymbol = methodGenerationContext.ConnectionParameter;
+        if (connectionParameterSymbol != null)
+        {
+            return string.Empty;
+        }
+
+        var contextName = methodGenerationContext.ClassGenerationContext.DbContextName;
         return $"command.Transaction = this.{contextName}.Database.CurrentTransaction?.GetDbTransaction();";
     }
 
@@ -517,8 +534,7 @@ namespace {namespaceName}
             return $"this.{connectionSymbol.Name}.Close();";
         }
 
-        var dbContextSymbol = methodGenerationContext.ClassGenerationContext.DbContextField;
-        var contextName = dbContextSymbol?.Name ?? "dbContext";
+        var contextName = methodGenerationContext.ClassGenerationContext.DbContextName;
         return $"this.{contextName}.Database.CloseConnection();";
     }
 
@@ -678,7 +694,7 @@ namespace {namespaceName}
         else
         {
             var dbContextSymbol = methodGenerationContext.ClassGenerationContext.DbContextField;
-            var contextName = dbContextSymbol?.Name ?? "dbContext";
+            var contextName = methodGenerationContext.ClassGenerationContext.DbContextName;
             var itemTypeProperty = GetDbSetField(dbContextSymbol, itemType)?.Name ?? itemType.Name + "s";
             if (isTask)
             {
@@ -815,6 +831,17 @@ namespace {namespaceName}
             }
         }
 
+        var hasTransactionsDbContext = !methodGenerationContext.UseDbConnection
+            && (isScalarType || methodGenerationContext.TransactionParameter != null || (isList && (IsTuple(itemType) || IsScalarType(itemType))));
+        if (hasTransactionsDbContext || methodGenerationContext.UseDbConnection)
+        {
+            var transactionStatment = this.GetDbTransactionStatement(methodGenerationContext);
+            if (!string.IsNullOrWhiteSpace(transactionStatment))
+            {
+                source.AppendLine(transactionStatment);
+            }
+        }
+
         if (isScalarType)
         {
             this.GenerateScalarMethod(source, methodGenerationContext, hasNullableAnnotations, returnType);
@@ -831,7 +858,6 @@ namespace {namespaceName}
         {
             if (!methodGenerationContext.UseDbConnection && (isList && (IsTuple(itemType) || IsScalarType(itemType))))
             {
-                source.AppendLine(this.GetDbTransactionStatement(methodGenerationContext));
                 source.Append($@"{this.GetOpenConnectionStatement(methodGenerationContext)}
             try
             {{
@@ -873,7 +899,6 @@ namespace {namespaceName}
         }
         else
         {
-            source.AppendLine(this.GetDbTransactionStatement(methodGenerationContext));
             source.Append($@"{this.GetOpenConnectionStatement(methodGenerationContext)}
             try
             {{
