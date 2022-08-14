@@ -701,7 +701,11 @@ namespace {namespaceName}
             }
             else
             {
-                source.AppendLine($"var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).{(isList ? "ToList" : "AsEnumerable().FirstOrDefault")}();");
+                string parameterString = parameters.Length == 0 ? string.Empty : ", parameters";
+                string materializeResults = isList
+                    ? "ToList"
+                    : methodGenerationContext.ClassGenerationContext.NullableContextOptions == NullableContextOptions.Enable ? "AsEnumerable().First" : "AsEnumerable().FirstOrDefault";
+                source.AppendLine($"var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{parameterString}).{materializeResults}();");
             }
         }
     }

@@ -44,4 +44,7 @@ internal partial class DbContextManager
 
     [SqlMarshal("non_existing")]
     public partial Task<int?> GetNullableScalarResultAsync();
+
+    [SqlMarshal("persons_by_id")]
+    public partial PersonDbContext.Person GetPersonById(int personId);
 }

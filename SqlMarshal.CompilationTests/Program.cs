@@ -121,6 +121,17 @@ internal class Program
         {
             WriteLine("Failed");
         }
+
+        Write("Get person with non-existing id: ");
+        try
+        {
+            var nonExistingPerson = connectionManager.GetPersonById(-1);
+            WriteLine("Failed");
+        }
+        catch (InvalidOperationException)
+        {
+            WriteLine("OK");
+        }
     }
 
     private static void TestDbContext()
@@ -155,6 +166,28 @@ internal class Program
             }
 
             transaction.Commit();
+        }
+
+        Write("Get person with id 33: ");
+        var person = manager.GetPersonById(33);
+        if (person.PersonId == 33)
+        {
+            WriteLine("OK");
+        }
+        else
+        {
+            WriteLine("Failed");
+        }
+
+        Write("Get person with non-existing id: ");
+        try
+        {
+            var nonExistingPerson = manager.GetPersonById(-1);
+            WriteLine("Failed");
+        }
+        catch (InvalidOperationException)
+        {
+            WriteLine("OK");
         }
     }
 
