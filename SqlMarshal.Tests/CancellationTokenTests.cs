@@ -206,7 +206,7 @@ namespace Foo
                 result.Add(item);
             }
 
-            await reader.CloseAsync(cancellationToken).ConfigureAwait(false);
+            await reader.CloseAsync().ConfigureAwait(false);
             return result;
         }
     }

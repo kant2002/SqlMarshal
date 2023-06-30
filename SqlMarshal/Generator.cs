@@ -639,7 +639,7 @@ namespace {namespaceName}
                 source.AppendLine();
                 if (isTask)
                 {
-                    source.AppendLine($"await reader.CloseAsync({cancellationToken}).ConfigureAwait(false);");
+                    source.AppendLine($"await reader.CloseAsync().ConfigureAwait(false);");
                 }
                 else
                 {
@@ -683,7 +683,7 @@ namespace {namespaceName}
 
                 if (isTask)
                 {
-                    source.AppendLine($"await reader.CloseAsync({cancellationToken}).ConfigureAwait(false);");
+                    source.AppendLine($"await reader.CloseAsync().ConfigureAwait(false);");
                 }
                 else
                 {
