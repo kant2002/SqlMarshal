@@ -751,7 +751,7 @@ namespace {namespaceName}
         var signature = $"({string.Join(", ", originalParameters.Select((parameterSymbol, index) => GetParameterDeclaration(methodSymbol, parameterSymbol, index)))})";
         var itemType = methodGenerationContext.ItemType;
         var getConnection = this.GetConnectionStatement(methodGenerationContext);
-        var isList = methodGenerationContext.IsList;
+        var isList = methodGenerationContext.IsList || methodGenerationContext.IsEnumerable;
         var isScalarType = IsScalarType(UnwrapNullableType(returnType))
             || returnType.SpecialType == SpecialType.System_Void
             || returnType.Name == "Task";

@@ -76,7 +76,9 @@ internal class MethodGenerationContext
 
     internal ITypeSymbol ReturnType => this.MethodSymbol.ReturnType.UnwrapTaskType();
 
-    internal bool IsList => this.ItemType != this.ReturnType;
+    internal bool IsList => IsList(this.ReturnType);
+
+    internal bool IsEnumerable => IsEnumerable(this.ReturnType);
 
     internal ITypeSymbol ItemType => UnwrapListItem(this.ReturnType);
 

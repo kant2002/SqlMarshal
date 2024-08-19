@@ -46,7 +46,7 @@ internal class ClassGenerationContext
 
     public bool HasEfCore => this.ConnectionField == null && this.Methods.All(_ => _.ConnectionParameter == null);
 
-    public bool HasCollections => !this.HasEfCore || this.Methods.Any(_ => _.IsList && (IsScalarType(_.ItemType) || IsTuple(_.ItemType)));
+    public bool HasCollections => !this.HasEfCore || this.Methods.Any(_ => (_.IsList || _.IsEnumerable) && (IsScalarType(_.ItemType) || IsTuple(_.ItemType)));
 
     private static IFieldSymbol? GetConnectionField(INamedTypeSymbol classSymbol)
     {

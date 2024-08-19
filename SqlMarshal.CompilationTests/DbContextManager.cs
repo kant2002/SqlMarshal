@@ -25,6 +25,9 @@ internal partial class DbContextManager
     public partial IList<(int Id, string Name)> GetTupleResult();
 
     [SqlMarshal("persons_list")]
+    public partial IEnumerable<PersonDbContext.Person> GetEnumerableResult();
+
+    [SqlMarshal("persons_list")]
     public partial Task<IList<PersonDbContext.Person>> GetResultAsync();
 
     [SqlMarshal("persons_list")]

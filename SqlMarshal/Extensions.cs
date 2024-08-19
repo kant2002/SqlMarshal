@@ -151,11 +151,15 @@ internal static class Extensions
         return returnType;
     }
 
+    internal static bool IsList(ITypeSymbol returnType) => returnType.Name == "IList" || returnType.Name == "List";
+
+    internal static bool IsEnumerable(ITypeSymbol returnType) => returnType.Name == "IEnumerable";
+
     internal static ITypeSymbol UnwrapListItem(ITypeSymbol returnType)
     {
         if (returnType is INamedTypeSymbol namedTypeSymbol)
         {
-            if (returnType.Name != "IList" && returnType.Name != "List")
+            if (!IsList(returnType) && !IsEnumerable(returnType))
             {
                 return returnType;
             }
