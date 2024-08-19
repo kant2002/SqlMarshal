@@ -112,7 +112,7 @@ internal sealed class RawSqlAttribute: System.Attribute
         };
     }
 
-    private static ISymbol? GetDbSetField(IFieldSymbol? dbContextSymbol, ITypeSymbol itemTypeSymbol)
+    private static IPropertySymbol? GetDbSetField(IFieldSymbol? dbContextSymbol, ITypeSymbol itemTypeSymbol)
     {
         if (dbContextSymbol == null)
         {
@@ -695,17 +695,19 @@ namespace {namespaceName}
         {
             var dbContextSymbol = methodGenerationContext.ClassGenerationContext.DbContextField;
             var contextName = methodGenerationContext.ClassGenerationContext.DbContextName;
-            var itemTypeProperty = GetDbSetField(dbContextSymbol, itemType)?.Name ?? itemType.Name + "s";
+            var dbsetField = GetDbSetField(dbContextSymbol, itemType);
+            var itemTypeProperty = dbsetField?.Name ?? itemType.Name + "s";
+            var nullableAnnotations = dbsetField?.NullableAnnotation == NullableAnnotation.Annotated && methodGenerationContext.ClassGenerationContext.NullableContextOptions.AnnotationsEnabled() ? "!" : string.Empty;
             if (isTask)
             {
                 if (isList)
                 {
-                    source.AppendLine($"var result = await this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).ToListAsync({cancellationToken}).ConfigureAwait(false);");
+                    source.AppendLine($"var result = await this.{contextName}.{itemTypeProperty}{nullableAnnotations}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).ToListAsync({cancellationToken}).ConfigureAwait(false);");
                 }
                 else
                 {
                     source.AppendLine($"{itemType} result = null!;");
-                    source.AppendLine($"var asyncEnumerable = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).AsAsyncEnumerable();");
+                    source.AppendLine($"var asyncEnumerable = this.{contextName}.{itemTypeProperty}{nullableAnnotations}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).AsAsyncEnumerable();");
                     source.AppendLine($"await foreach (var current in asyncEnumerable)");
                     source.AppendLine("{");
                     source.PushIndent();
@@ -721,7 +723,7 @@ namespace {namespaceName}
                 string materializeResults = isList
                     ? "ToList"
                     : methodGenerationContext.ClassGenerationContext.NullableContextOptions == NullableContextOptions.Enable ? "AsEnumerable().First" : "AsEnumerable().FirstOrDefault";
-                source.AppendLine($"var result = this.{contextName}.{itemTypeProperty}.FromSqlRaw(sqlQuery{parameterString}).{materializeResults}();");
+                source.AppendLine($"var result = this.{contextName}.{itemTypeProperty}{nullableAnnotations}.FromSqlRaw(sqlQuery{parameterString}).{materializeResults}();");
             }
         }
     }

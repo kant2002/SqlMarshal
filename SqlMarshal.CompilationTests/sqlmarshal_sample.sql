@@ -41,3 +41,15 @@ begin
 end
 GO
 
+CREATE TABLE [user] (
+user_id int not null identity primary key,
+user_name nvarchar(100) null
+)
+GO
+
+
+
+CREATE OR ALTER PROCEDURE users_list
+AS
+SELECT * from [user]
+GO

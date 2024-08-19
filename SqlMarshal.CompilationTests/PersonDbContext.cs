@@ -18,6 +18,8 @@ namespace SqlMarshal.CompilationTests
 
         public DbSet<Person> Persons { get; set; } = null!;
 
+        public DbSet<User> Users { get; set; } = null!;
+
         internal class Person
         {
             [Column("person_id")]
@@ -25,6 +27,15 @@ namespace SqlMarshal.CompilationTests
 
             [Column("person_name")]
             public string? PersonName { get; set; }
+        }
+
+        internal class User
+        {
+            [Column("user_id")]
+            public int UserId { get; set; }
+
+            [Column("user_name")]
+            public string? UserName { get; set; }
         }
     }
 }

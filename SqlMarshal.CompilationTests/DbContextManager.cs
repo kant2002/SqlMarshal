@@ -50,4 +50,7 @@ internal partial class DbContextManager
 
     [SqlMarshal("persons_by_id")]
     public partial PersonDbContext.Person GetPersonById(int personId);
+
+    [SqlMarshal("users_list")]
+    public partial IList<PersonDbContext.User> GetUsers();
 }
