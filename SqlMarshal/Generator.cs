@@ -791,6 +791,14 @@ namespace {namespaceName}
             return builder.ToString();
         }
 
+        if (canonicalOperationName == "Count")
+        {
+            var builder = new StringBuilder();
+            builder.Append("SELECT COUNT(1) FROM ");
+            builder.Append(entityType.Name);
+            return builder.ToString();
+        }
+
         return null;
     }
 
