@@ -46,6 +46,17 @@ internal sealed class RawSqlAttribute: System.Attribute
 {
     public RawSqlAttribute() {}
 }
+
+[System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple=false)]
+internal sealed class RepositoryAttribute: System.Attribute
+{
+    public RepositoryAttribute(global::System.Type entityType)
+    {
+        EntityType = entityType;
+    }
+
+    public global::System.Type EntityType { get; }
+}
 ";
 
     /// <inheritdoc/>
@@ -73,6 +84,15 @@ internal sealed class RawSqlAttribute: System.Attribute
             return;
         }
 
+        INamedTypeSymbol? repositoryAttributeSymbol = context.Compilation.GetTypeByMetadataName("RepositoryAttribute");
+        if (repositoryAttributeSymbol == null)
+        {
+            context.ReportDiagnostic(Diagnostic.Create(
+                new DiagnosticDescriptor("SP0002", "No repository attribute", "Internal analyzer error.", "Internal", DiagnosticSeverity.Error, true),
+                null));
+            return;
+        }
+
         var hasNullableAnnotations = context.Compilation.Options.NullableContextOptions != NullableContextOptions.Disable;
 
         // Group the fields by class, and generate the source
@@ -83,6 +103,7 @@ internal sealed class RawSqlAttribute: System.Attribute
                 (INamedTypeSymbol)group.Key!,
                 group.ToList(),
                 attributeSymbol,
+                repositoryAttributeSymbol,
                 context.Compilation.Options.NullableContextOptions);
             var sourceCode = this.ProcessClass(
                 generationContext,
@@ -368,6 +389,20 @@ internal sealed class RawSqlAttribute: System.Attribute
         }
     }
 
+    private static string? GetProcedureName(IMethodSymbol methodSymbol, ISymbol attributeSymbol)
+    {
+        AttributeData? attributeData = methodSymbol.GetAttributes().FirstOrDefault(ad => ad.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default));
+        if (attributeData == null)
+        {
+            return null;
+        }
+
+        TypedConstant overridenNameOpt = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "PropertyName").Value;
+        var procedureNameConstraint = attributeData.ConstructorArguments.ElementAtOrDefault(0);
+        object? procedureName = procedureNameConstraint.Value;
+        return (string?)procedureName;
+    }
+
     private string? ProcessClass(
         ClassGenerationContext classGenerationContext,
         INamedTypeSymbol classSymbol,
@@ -423,7 +458,6 @@ namespace {namespaceName}
                 source,
                 methodGenerationContext,
                 methodGenerationContext.MethodSymbol,
-                attributeSymbol,
                 hasNullableAnnotations);
         }
 
@@ -728,11 +762,42 @@ namespace {namespaceName}
         }
     }
 
+    private string? GetQueryForRepositoryMethod(MethodGenerationContext methodGenerationContext)
+    {
+        var canonicalOperationName = methodGenerationContext.MethodSymbol.Name;
+        var entityType = methodGenerationContext.ClassGenerationContext.RepositoryEntityType;
+        if (entityType is null)
+        {
+            return null;
+        }
+
+        if (canonicalOperationName == "FindAll")
+        {
+            var builder = new StringBuilder();
+            builder.Append("SELECT");
+            var properties = entityType.GetMembers().OfType<IPropertySymbol>().ToList();
+            for (var i = 0; i < properties.Count; i++)
+            {
+                builder.Append(" ");
+                builder.Append(properties[i].Name);
+                if (i != properties.Count - 1)
+                {
+                    builder.Append(",");
+                }
+            }
+
+            builder.Append(" FROM ");
+            builder.Append(entityType.Name);
+            return builder.ToString();
+        }
+
+        return null;
+    }
+
     private void ProcessMethod(
         IndentedStringBuilder source,
         MethodGenerationContext methodGenerationContext,
         IMethodSymbol methodSymbol,
-        ISymbol attributeSymbol,
         bool hasNullableAnnotations)
     {
         // get the name and type of the field
@@ -741,11 +806,7 @@ namespace {namespaceName}
         var symbol = (ISymbol)methodSymbol;
         var isTask = methodGenerationContext.IsTask;
 
-        // get the AutoNotify attribute from the field, and any associated data
-        AttributeData attributeData = methodSymbol.GetAttributes().Single(ad => ad.AttributeClass!.Equals(attributeSymbol, SymbolEqualityComparer.Default));
-        TypedConstant overridenNameOpt = attributeData.NamedArguments.SingleOrDefault(kvp => kvp.Key == "PropertyName").Value;
-        var procedureNameConstraint = attributeData.ConstructorArguments.ElementAtOrDefault(0);
-        object? procedureName = procedureNameConstraint.Value;
+        string? procedureName = GetProcedureName(methodSymbol, methodGenerationContext.ClassGenerationContext.AttributeSymbol);
         var parameters = methodGenerationContext.SqlParameters;
         var originalParameters = methodSymbol.Parameters;
 
@@ -803,14 +864,21 @@ namespace {namespaceName}
 
         if (!hasCustomSql)
         {
-            if (parameters.Length == 0)
+            if (procedureName == null)
             {
-                source.AppendLine($@"var sqlQuery = @""{procedureName}"";");
+                source.AppendLine($@"var sqlQuery = @""{this.GetQueryForRepositoryMethod(methodGenerationContext)}"";");
             }
             else
             {
-                string parametersList = string.Join(", ", parameters.Select(parameter => GetParameterPassing(parameter)));
-                source.AppendLine($@"var sqlQuery = @""{procedureName} {parametersList}"";");
+                if (parameters.Length == 0)
+                {
+                    source.AppendLine($@"var sqlQuery = @""{procedureName}"";");
+                }
+                else
+                {
+                    string parametersList = string.Join(", ", parameters.Select(parameter => GetParameterPassing(parameter)));
+                    source.AppendLine($@"var sqlQuery = @""{procedureName} {parametersList}"";");
+                }
             }
         }
 
@@ -925,8 +993,7 @@ namespace {namespaceName}
         public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
         {
             // any field with at least one attribute is a candidate for property generation
-            if (context.Node is MethodDeclarationSyntax methodDeclarationSyntax
-                && methodDeclarationSyntax.AttributeLists.Count > 0)
+            if (context.Node is MethodDeclarationSyntax methodDeclarationSyntax)
             {
                 // Get the symbol being declared by the field, and keep it if its annotated
                 IMethodSymbol? methodSymbol = context.SemanticModel.GetDeclaredSymbol(context.Node) as IMethodSymbol;
@@ -936,6 +1003,11 @@ namespace {namespaceName}
                 }
 
                 if (methodSymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "SqlMarshalAttribute"))
+                {
+                    this.Methods.Add(methodSymbol);
+                }
+
+                if (methodSymbol.ContainingType.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "RepositoryAttribute"))
                 {
                     this.Methods.Add(methodSymbol);
                 }

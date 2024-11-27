@@ -17,11 +17,13 @@ internal class ClassGenerationContext
         INamedTypeSymbol classSymbol,
         List<IMethodSymbol> methods,
         ISymbol attributeSymbol,
+        ISymbol repositoryAttributeSymbol,
         NullableContextOptions nullableContextOptions)
     {
         this.ClassSymbol = classSymbol;
         this.Methods = methods.Select(_ => new MethodGenerationContext(this, _)).ToList();
         this.AttributeSymbol = attributeSymbol;
+        this.RepositoryAttributeSymbol = repositoryAttributeSymbol;
         this.NullableContextOptions = nullableContextOptions;
 
         this.ConnectionField = GetConnectionField(classSymbol);
@@ -34,6 +36,8 @@ internal class ClassGenerationContext
 
     public ISymbol AttributeSymbol { get; }
 
+    public ISymbol RepositoryAttributeSymbol { get; }
+
     public NullableContextOptions NullableContextOptions { get; }
 
     public bool HasNullableAnnotations => this.NullableContextOptions != NullableContextOptions.Disable;
@@ -43,6 +47,10 @@ internal class ClassGenerationContext
     public IFieldSymbol? DbContextField { get; }
 
     public string DbContextName => this.DbContextField?.Name ?? "dbContext";
+
+    public bool IsRepository => this.ClassSymbol.GetAttributes().Any(ad => ad.AttributeClass!.Equals(this.RepositoryAttributeSymbol, SymbolEqualityComparer.Default));
+
+    public ITypeSymbol? RepositoryEntityType => (ITypeSymbol?)this.ClassSymbol.GetAttributes().Single(ad => ad.AttributeClass!.Equals(this.RepositoryAttributeSymbol, SymbolEqualityComparer.Default)).ConstructorArguments.ElementAtOrDefault(0).Value;
 
     public bool HasEfCore => this.ConnectionField == null && this.Methods.All(_ => _.ConnectionParameter == null);
 
