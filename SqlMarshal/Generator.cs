@@ -785,7 +785,7 @@ namespace {namespaceName}
             for (var i = 0; i < properties.Count; i++)
             {
                 builder.Append(" ");
-                builder.Append(properties[i].Name);
+                builder.Append(NameMapper.MapName(properties[i].Name));
                 if (i != properties.Count - 1)
                 {
                     builder.Append(",");
@@ -793,7 +793,7 @@ namespace {namespaceName}
             }
 
             builder.Append(" FROM ");
-            builder.Append(entityType.Name);
+            builder.Append(NameMapper.MapName(entityType.Name));
             return builder.ToString();
         }
 
@@ -805,7 +805,7 @@ namespace {namespaceName}
             for (var i = 0; i < properties.Count; i++)
             {
                 builder.Append(" ");
-                builder.Append(properties[i].Name);
+                builder.Append(NameMapper.MapName(properties[i].Name));
                 if (i != properties.Count - 1)
                 {
                     builder.Append(",");
@@ -813,7 +813,7 @@ namespace {namespaceName}
             }
 
             builder.Append(" FROM ");
-            builder.Append(entityType.Name);
+            builder.Append(NameMapper.MapName(entityType.Name));
             AppendFilterById(builder);
             return builder.ToString();
         }
@@ -822,7 +822,7 @@ namespace {namespaceName}
         {
             var builder = new StringBuilder();
             builder.Append("SELECT COUNT(1) FROM ");
-            builder.Append(entityType.Name);
+            builder.Append(NameMapper.MapName(entityType.Name));
             return builder.ToString();
         }
 
@@ -830,7 +830,7 @@ namespace {namespaceName}
         {
             var builder = new StringBuilder();
             builder.Append("DELETE FROM ");
-            builder.Append(entityType.Name);
+            builder.Append(NameMapper.MapName(entityType.Name));
             return builder.ToString();
         }
 
@@ -838,7 +838,7 @@ namespace {namespaceName}
         {
             var builder = new StringBuilder();
             builder.Append("DELETE FROM ");
-            builder.Append(entityType.Name);
+            builder.Append(NameMapper.MapName(entityType.Name));
             AppendFilterById(builder);
             return builder.ToString();
         }
@@ -847,7 +847,7 @@ namespace {namespaceName}
         {
             var builder = new StringBuilder();
             builder.Append("UPDATE ");
-            builder.Append(entityType.Name);
+            builder.Append(NameMapper.MapName(entityType.Name));
             builder.Append(" SET ");
             bool first = true;
             foreach (var parameter in methodGenerationContext.SqlParameters)
@@ -869,7 +869,7 @@ namespace {namespaceName}
                     continue;
                 }
 
-                builder.Append(entityProperty.Name);
+                builder.Append(NameMapper.MapName(entityProperty.Name));
                 builder.Append(" = ");
                 builder.Append("@" + NameMapper.MapName(parameter.Name));
                 first = false;
@@ -883,7 +883,7 @@ namespace {namespaceName}
         {
             var builder = new StringBuilder();
             builder.Append("INSERT INTO ");
-            builder.Append(entityType.Name);
+            builder.Append(NameMapper.MapName(entityType.Name));
             builder.Append("(");
             bool first = true;
             foreach (var parameter in methodGenerationContext.SqlParameters)
@@ -900,7 +900,7 @@ namespace {namespaceName}
                     continue;
                 }
 
-                builder.Append(entityProperty.Name);
+                builder.Append(NameMapper.MapName(entityProperty.Name));
                 first = false;
             }
 
@@ -942,7 +942,7 @@ namespace {namespaceName}
                 return;
             }
 
-            builder.Append(idMember.Name);
+            builder.Append(NameMapper.MapName(idMember.Name));
             builder.Append(" = ");
             builder.Append("@" + NameMapper.MapName(idMember.Name));
         }

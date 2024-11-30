@@ -60,7 +60,7 @@ namespace Foo
             var connection = this.connection;
             using var command = connection.CreateCommand();
 
-            var sqlQuery = @""SELECT Id, Name FROM TestEntity"";
+            var sqlQuery = @""SELECT id, name FROM test_entity"";
             command.CommandText = sqlQuery;
             using var reader = command.ExecuteReader();
             var result = new List<TestEntity>();
@@ -139,7 +139,7 @@ namespace Foo
                 idParameter,
             };
 
-            var sqlQuery = @""SELECT Id, Name FROM TestEntity WHERE Id = @id"";
+            var sqlQuery = @""SELECT id, name FROM test_entity WHERE id = @id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             using var reader = command.ExecuteReader(System.Data.CommandBehavior.SingleResult | System.Data.CommandBehavior.SingleRow);
@@ -209,7 +209,7 @@ namespace Foo
             var connection = this.connection;
             using var command = connection.CreateCommand();
 
-            var sqlQuery = @""SELECT COUNT(1) FROM TestEntity"";
+            var sqlQuery = @""SELECT COUNT(1) FROM test_entity"";
             command.CommandText = sqlQuery;
             var result = command.ExecuteScalar();
             return (int)result!;
@@ -267,7 +267,7 @@ namespace Foo
             var connection = this.connection;
             using var command = connection.CreateCommand();
 
-            var sqlQuery = @""DELETE FROM TestEntity"";
+            var sqlQuery = @""DELETE FROM test_entity"";
             command.CommandText = sqlQuery;
             command.ExecuteNonQuery();
         }
@@ -333,7 +333,7 @@ namespace Foo
                 idParameter,
             };
 
-            var sqlQuery = @""DELETE FROM TestEntity WHERE Id = @id"";
+            var sqlQuery = @""DELETE FROM test_entity WHERE id = @id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             command.ExecuteNonQuery();
@@ -412,7 +412,7 @@ namespace Foo
                 descriptionParameter,
             };
 
-            var sqlQuery = @""UPDATE TestEntity SET Name = @name, Description = @description WHERE Id = @id"";
+            var sqlQuery = @""UPDATE test_entity SET name = @name, description = @description WHERE id = @id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             command.ExecuteNonQuery();
@@ -491,7 +491,7 @@ namespace Foo
                 descriptionParameter,
             };
 
-            var sqlQuery = @""INSERT INTO TestEntity(Id, Name, Description) VALUES (@id, @name, @description)"";
+            var sqlQuery = @""INSERT INTO test_entity(id, name, description) VALUES (@id, @name, @description)"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             command.ExecuteNonQuery();

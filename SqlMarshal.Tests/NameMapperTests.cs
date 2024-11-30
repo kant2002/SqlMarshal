@@ -13,6 +13,9 @@ public class NameMapperTests
 {
     [DataTestMethod]
     [DataRow("personId", "person_id")]
+    [DataRow("name", "name")]
+    [DataRow("Name", "name")]
+    [DataRow("PersonId", "person_id")]
     public void MyTestMethod(string parameterName, string expectedStoredProcedureParameter)
     {
         var storedProcedureParameter = NameMapper.MapName(parameterName);
