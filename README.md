@@ -74,6 +74,8 @@ public partial class DataContext
 }
 ```
 
+You can override column names and table names of the entity using attributes from `System.ComponentModel.DataAnnotations.Schema` namespace.
+
 # Temporary limitations or plans
 Current version of library has several limitations which not because it cannot be implemented reasonably,
 but because there was lack of time to think through all options. So I list all current limitations, so any user would be aware about them.
