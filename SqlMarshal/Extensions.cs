@@ -7,6 +7,8 @@
 namespace SqlMarshal;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Linq;
 
 internal static class Extensions
 {
@@ -173,5 +175,10 @@ internal static class Extensions
         }
 
         return returnType;
+    }
+
+    internal static IPropertySymbol? FindIdMember(this ITypeSymbol returnType)
+    {
+        return returnType.GetMembers().OfType<IPropertySymbol>().FirstOrDefault(_ => _.Name == "Id");
     }
 }

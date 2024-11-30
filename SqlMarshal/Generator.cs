@@ -8,6 +8,7 @@ namespace SqlMarshal;
 
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -59,6 +60,12 @@ internal sealed class RepositoryAttribute: System.Attribute
 }
 ";
 
+    private static DiagnosticDescriptor SP0001 { get; } = new DiagnosticDescriptor("SP0001", "No stored procedure attribute", "Internal analyzer error.", "Internal", DiagnosticSeverity.Error, true);
+
+    private static DiagnosticDescriptor SP0002 { get; } = new DiagnosticDescriptor("SP0002", "No repository attribute", "Internal analyzer error.", "Internal", DiagnosticSeverity.Error, true);
+
+    private static DiagnosticDescriptor SP0003 { get; } = new DiagnosticDescriptor("SP0002", "Id property cannot be guessed", "Cannot find id property for entity type {0}.", "SqlMarshal", DiagnosticSeverity.Error, true);
+
     /// <inheritdoc/>
     public void Initialize(GeneratorInitializationContext context)
     {
@@ -78,18 +85,14 @@ internal sealed class RepositoryAttribute: System.Attribute
         INamedTypeSymbol? attributeSymbol = context.Compilation.GetTypeByMetadataName("SqlMarshalAttribute");
         if (attributeSymbol == null)
         {
-            context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor("SP0001", "No stored procedure attribute", "Internal analyzer error.", "Internal", DiagnosticSeverity.Error, true),
-                null));
+            context.ReportDiagnostic(Diagnostic.Create(SP0001, null));
             return;
         }
 
         INamedTypeSymbol? repositoryAttributeSymbol = context.Compilation.GetTypeByMetadataName("RepositoryAttribute");
         if (repositoryAttributeSymbol == null)
         {
-            context.ReportDiagnostic(Diagnostic.Create(
-                new DiagnosticDescriptor("SP0002", "No repository attribute", "Internal analyzer error.", "Internal", DiagnosticSeverity.Error, true),
-                null));
+            context.ReportDiagnostic(Diagnostic.Create(SP0002, null));
             return;
         }
 
@@ -104,7 +107,7 @@ internal sealed class RepositoryAttribute: System.Attribute
                 group.ToList(),
                 attributeSymbol,
                 repositoryAttributeSymbol,
-                context.Compilation.Options.NullableContextOptions);
+                context);
             var sourceCode = this.ProcessClass(
                 generationContext,
                 (INamedTypeSymbol)group.Key!,
@@ -112,9 +115,7 @@ internal sealed class RepositoryAttribute: System.Attribute
                 hasNullableAnnotations);
             if (sourceCode == null)
             {
-                context.ReportDiagnostic(Diagnostic.Create(
-                    new DiagnosticDescriptor("SP0002", "No source code generated attribute", "Internal analyzer error.", "Internal", DiagnosticSeverity.Error, true),
-                    null));
+                context.ReportDiagnostic(Diagnostic.Create(SP0002, null));
                 continue;
             }
 
@@ -791,6 +792,27 @@ namespace {namespaceName}
             return builder.ToString();
         }
 
+        if (canonicalOperationName == "FindById")
+        {
+            var builder = new StringBuilder();
+            builder.Append("SELECT");
+            var properties = entityType.GetMembers().OfType<IPropertySymbol>().ToList();
+            for (var i = 0; i < properties.Count; i++)
+            {
+                builder.Append(" ");
+                builder.Append(properties[i].Name);
+                if (i != properties.Count - 1)
+                {
+                    builder.Append(",");
+                }
+            }
+
+            builder.Append(" FROM ");
+            builder.Append(entityType.Name);
+            AppendFitlerById(builder);
+            return builder.ToString();
+        }
+
         if (canonicalOperationName == "Count")
         {
             var builder = new StringBuilder();
@@ -799,7 +821,40 @@ namespace {namespaceName}
             return builder.ToString();
         }
 
+        if (canonicalOperationName == "DeleteAll")
+        {
+            var builder = new StringBuilder();
+            builder.Append("DELETE FROM ");
+            builder.Append(entityType.Name);
+            return builder.ToString();
+        }
+
+        if (canonicalOperationName == "DeleteById")
+        {
+            var builder = new StringBuilder();
+            builder.Append("DELETE FROM ");
+            builder.Append(entityType.Name);
+            AppendFitlerById(builder);
+            return builder.ToString();
+        }
+
         return null;
+
+        void AppendFitlerById(StringBuilder builder)
+        {
+            builder.Append(" WHERE ");
+            var idMember = entityType.FindIdMember();
+            if (idMember == null)
+            {
+                methodGenerationContext.ClassGenerationContext.GeneratorExecutionContext.ReportDiagnostic(
+                    Diagnostic.Create(SP0003, methodGenerationContext.MethodSymbol.Locations.FirstOrDefault(), new object[] { entityType.ToDisplayString() }));
+                return;
+            }
+
+            builder.Append(idMember.Name);
+            builder.Append(" = ");
+            builder.Append("@" + NameMapper.MapName(idMember.Name));
+        }
     }
 
     private void ProcessMethod(
@@ -835,7 +890,10 @@ namespace {namespaceName}
             }
             else if (!methodGenerationContext.IsDataReader)
             {
-                returnTypeName += "?";
+                if (!returnTypeName.EndsWith("?"))
+                {
+                    returnTypeName += "?";
+                }
             }
         }
 

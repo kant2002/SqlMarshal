@@ -18,13 +18,14 @@ internal class ClassGenerationContext
         List<IMethodSymbol> methods,
         ISymbol attributeSymbol,
         ISymbol repositoryAttributeSymbol,
-        NullableContextOptions nullableContextOptions)
+        GeneratorExecutionContext context)
     {
         this.ClassSymbol = classSymbol;
         this.Methods = methods.Select(_ => new MethodGenerationContext(this, _)).ToList();
         this.AttributeSymbol = attributeSymbol;
         this.RepositoryAttributeSymbol = repositoryAttributeSymbol;
-        this.NullableContextOptions = nullableContextOptions;
+        this.GeneratorExecutionContext = context;
+        this.NullableContextOptions = context.Compilation.Options.NullableContextOptions;
 
         this.ConnectionField = GetConnectionField(classSymbol);
         this.DbContextField = GetContextField(classSymbol);
@@ -37,6 +38,8 @@ internal class ClassGenerationContext
     public ISymbol AttributeSymbol { get; }
 
     public ISymbol RepositoryAttributeSymbol { get; }
+
+    public GeneratorExecutionContext GeneratorExecutionContext { get; }
 
     public NullableContextOptions NullableContextOptions { get; }
 
