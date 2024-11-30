@@ -39,6 +39,41 @@ public partial class DataContext
 }
 ```
 
+You can have simplified repository generator. 
+Detection happens by name, and I plan to automatically support more naming conventions.
+
+```csharp
+public class Product
+{
+    public int Id { get; set; }
+
+    public string? Code { get; set; }
+    public string? ProductTitle { get; set; }
+    public string? Description { get; set; }
+}
+
+public partial class DataContext
+{
+    private DbConnection connection;
+
+    public DataContext(DbConnection connection) => this.connection = connection;
+
+    public partial IList<Product> FetchAll();
+
+    public partial Product? FetchById(int id);
+
+    public partial int Count();
+
+    public partial void DeleteAll();
+
+    public partial void DeleteById(int id);
+
+    public partial void Insert(int id, string code, string productTitle, string description);
+
+    public partial void Update(int id, string code, string productTitle, string description);
+}
+```
+
 # Temporary limitations or plans
 Current version of library has several limitations which not because it cannot be implemented reasonably,
 but because there was lack of time to think through all options. So I list all current limitations, so any user would be aware about them.
