@@ -30,6 +30,8 @@ public class CodeGenerationTestBase
             }
         }
 
+        references.Add(MetadataReference.CreateFromFile(typeof(System.ComponentModel.DataAnnotations.Schema.ColumnAttribute).Assembly.Location));
+
         var compilation = CSharpCompilation.Create(
             "foo",
             new SyntaxTree[] { syntaxTree },

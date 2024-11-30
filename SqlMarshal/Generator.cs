@@ -785,7 +785,7 @@ namespace {namespaceName}
             for (var i = 0; i < properties.Count; i++)
             {
                 builder.Append(" ");
-                builder.Append(NameMapper.MapName(properties[i].Name));
+                builder.Append(properties[i].GetSqlName());
                 if (i != properties.Count - 1)
                 {
                     builder.Append(",");
@@ -793,7 +793,7 @@ namespace {namespaceName}
             }
 
             builder.Append(" FROM ");
-            builder.Append(NameMapper.MapName(entityType.Name));
+            builder.Append(entityType.GetSqlName());
             return builder.ToString();
         }
 
@@ -805,7 +805,7 @@ namespace {namespaceName}
             for (var i = 0; i < properties.Count; i++)
             {
                 builder.Append(" ");
-                builder.Append(NameMapper.MapName(properties[i].Name));
+                builder.Append(properties[i].GetSqlName());
                 if (i != properties.Count - 1)
                 {
                     builder.Append(",");
@@ -813,7 +813,7 @@ namespace {namespaceName}
             }
 
             builder.Append(" FROM ");
-            builder.Append(NameMapper.MapName(entityType.Name));
+            builder.Append(entityType.GetSqlName());
             AppendFilterById(builder);
             return builder.ToString();
         }
@@ -822,7 +822,7 @@ namespace {namespaceName}
         {
             var builder = new StringBuilder();
             builder.Append("SELECT COUNT(1) FROM ");
-            builder.Append(NameMapper.MapName(entityType.Name));
+            builder.Append(entityType.GetSqlName());
             return builder.ToString();
         }
 
@@ -830,7 +830,7 @@ namespace {namespaceName}
         {
             var builder = new StringBuilder();
             builder.Append("DELETE FROM ");
-            builder.Append(NameMapper.MapName(entityType.Name));
+            builder.Append(entityType.GetSqlName());
             return builder.ToString();
         }
 
@@ -838,7 +838,7 @@ namespace {namespaceName}
         {
             var builder = new StringBuilder();
             builder.Append("DELETE FROM ");
-            builder.Append(NameMapper.MapName(entityType.Name));
+            builder.Append(entityType.GetSqlName());
             AppendFilterById(builder);
             return builder.ToString();
         }
@@ -847,12 +847,12 @@ namespace {namespaceName}
         {
             var builder = new StringBuilder();
             builder.Append("UPDATE ");
-            builder.Append(NameMapper.MapName(entityType.Name));
+            builder.Append(entityType.GetSqlName());
             builder.Append(" SET ");
             bool first = true;
             foreach (var parameter in methodGenerationContext.SqlParameters)
             {
-                if (parameter.Name == "id")
+                if (parameter.IsPrimaryKey())
                 {
                     continue;
                 }
@@ -869,9 +869,9 @@ namespace {namespaceName}
                     continue;
                 }
 
-                builder.Append(NameMapper.MapName(entityProperty.Name));
+                builder.Append(entityProperty.GetSqlName());
                 builder.Append(" = ");
-                builder.Append("@" + NameMapper.MapName(parameter.Name));
+                builder.Append(parameter.GetParameterName());
                 first = false;
             }
 
@@ -883,7 +883,7 @@ namespace {namespaceName}
         {
             var builder = new StringBuilder();
             builder.Append("INSERT INTO ");
-            builder.Append(NameMapper.MapName(entityType.Name));
+            builder.Append(entityType.GetSqlName());
             builder.Append("(");
             bool first = true;
             foreach (var parameter in methodGenerationContext.SqlParameters)
@@ -900,7 +900,7 @@ namespace {namespaceName}
                     continue;
                 }
 
-                builder.Append(NameMapper.MapName(entityProperty.Name));
+                builder.Append(entityProperty.GetSqlName());
                 first = false;
             }
 
@@ -920,7 +920,7 @@ namespace {namespaceName}
                     continue;
                 }
 
-                builder.Append("@" + NameMapper.MapName(parameter.Name));
+                builder.Append(parameter.GetParameterName());
                 first = false;
             }
 
@@ -942,9 +942,9 @@ namespace {namespaceName}
                 return;
             }
 
-            builder.Append(NameMapper.MapName(idMember.Name));
+            builder.Append(idMember.GetSqlName());
             builder.Append(" = ");
-            builder.Append("@" + NameMapper.MapName(idMember.Name));
+            builder.Append(idMember.GetParameterName());
         }
     }
 

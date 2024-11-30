@@ -179,17 +179,62 @@ internal static class Extensions
 
     internal static IPropertySymbol? FindIdMember(this ITypeSymbol returnType)
     {
-        return returnType.GetMembers().OfType<IPropertySymbol>().FirstOrDefault(FindIdMember);
+        return returnType.GetMembers().OfType<IPropertySymbol>().FirstOrDefault(IsPrimaryKey);
     }
 
-    internal static bool FindIdMember(this IPropertySymbol propertySymbol)
+    internal static bool IsPrimaryKey(this IPropertySymbol propertySymbol)
     {
         return propertySymbol.Name == "Id";
+    }
+
+    internal static bool IsPrimaryKey(this IParameterSymbol propertySymbol)
+    {
+        return propertySymbol.Name == "Id" || propertySymbol.Name == "id";
     }
 
     internal static IPropertySymbol? FindMember(this ITypeSymbol returnType, string parameterName)
     {
         return returnType.GetMembers().OfType<IPropertySymbol>()
             .FirstOrDefault(propertySymbol => string.Equals(propertySymbol.Name, parameterName, System.StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    internal static string GetSqlName(this IPropertySymbol propertySymbol)
+    {
+        var attribute = propertySymbol.GetAttributes().FirstOrDefault(attribute => attribute.AttributeClass?.ToDisplayString() == "System.ComponentModel.DataAnnotations.Schema.ColumnAttribute");
+        if (attribute != null)
+        {
+            var overrideName = attribute.ConstructorArguments.FirstOrDefault().Value as string;
+            if (overrideName is not null)
+            {
+                return overrideName;
+            }
+        }
+
+        return NameMapper.MapName(propertySymbol.Name);
+    }
+
+    internal static string GetSqlName(this ITypeSymbol typeSymbol)
+    {
+        var attribute = typeSymbol.GetAttributes().FirstOrDefault(attribute => attribute.AttributeClass?.ToDisplayString() == "System.ComponentModel.DataAnnotations.Schema.TableAttribute");
+        if (attribute != null)
+        {
+            var overrideName = attribute.ConstructorArguments.FirstOrDefault().Value as string;
+            if (overrideName is not null)
+            {
+                return overrideName;
+            }
+        }
+
+        return NameMapper.MapName(typeSymbol.Name);
+    }
+
+    internal static string GetParameterName(this IPropertySymbol propertySymbol)
+    {
+        return "@" + NameMapper.MapName(propertySymbol.Name);
+    }
+
+    internal static string GetParameterName(this IParameterSymbol parameterSymbol)
+    {
+        return "@" + NameMapper.MapName(parameterSymbol.Name);
     }
 }
