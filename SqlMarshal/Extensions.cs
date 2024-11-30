@@ -179,6 +179,17 @@ internal static class Extensions
 
     internal static IPropertySymbol? FindIdMember(this ITypeSymbol returnType)
     {
-        return returnType.GetMembers().OfType<IPropertySymbol>().FirstOrDefault(_ => _.Name == "Id");
+        return returnType.GetMembers().OfType<IPropertySymbol>().FirstOrDefault(FindIdMember);
+    }
+
+    internal static bool FindIdMember(this IPropertySymbol propertySymbol)
+    {
+        return propertySymbol.Name == "Id";
+    }
+
+    internal static IPropertySymbol? FindMember(this ITypeSymbol returnType, string parameterName)
+    {
+        return returnType.GetMembers().OfType<IPropertySymbol>()
+            .FirstOrDefault(propertySymbol => string.Equals(propertySymbol.Name, parameterName, System.StringComparison.InvariantCultureIgnoreCase));
     }
 }

@@ -7,6 +7,7 @@
 namespace SqlMarshal;
 
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Linq;
 using System.Reflection.Metadata;
 using System.Text;
@@ -64,7 +65,11 @@ internal sealed class RepositoryAttribute: System.Attribute
 
     private static DiagnosticDescriptor SP0002 { get; } = new DiagnosticDescriptor("SP0002", "No repository attribute", "Internal analyzer error.", "Internal", DiagnosticSeverity.Error, true);
 
-    private static DiagnosticDescriptor SP0003 { get; } = new DiagnosticDescriptor("SP0002", "Id property cannot be guessed", "Cannot find id property for entity type {0}.", "SqlMarshal", DiagnosticSeverity.Error, true);
+    private static DiagnosticDescriptor SP0003 { get; } = new DiagnosticDescriptor("SP0003", "Id property cannot be guessed", "Cannot find id property for entity type {0}.", "SqlMarshal", DiagnosticSeverity.Error, true);
+
+    private static DiagnosticDescriptor SP0004 { get; } = new DiagnosticDescriptor("SP0004", "Entity property corresponding to parameter cannot be guessed", "Cannot find property in entity type {0} corresponding to parameter {1}.", "SqlMarshal", DiagnosticSeverity.Error, true);
+
+    private static DiagnosticDescriptor SP0005 { get; } = new DiagnosticDescriptor("SP0005", "Unknown method for generation", "Unknown method {0} for generation.", "SqlMarshal", DiagnosticSeverity.Error, true);
 
     /// <inheritdoc/>
     public void Initialize(GeneratorInitializationContext context)
@@ -809,7 +814,7 @@ namespace {namespaceName}
 
             builder.Append(" FROM ");
             builder.Append(entityType.Name);
-            AppendFitlerById(builder);
+            AppendFilterById(builder);
             return builder.ToString();
         }
 
@@ -834,13 +839,99 @@ namespace {namespaceName}
             var builder = new StringBuilder();
             builder.Append("DELETE FROM ");
             builder.Append(entityType.Name);
-            AppendFitlerById(builder);
+            AppendFilterById(builder);
             return builder.ToString();
         }
 
+        if (canonicalOperationName == "Update")
+        {
+            var builder = new StringBuilder();
+            builder.Append("UPDATE ");
+            builder.Append(entityType.Name);
+            builder.Append(" SET ");
+            bool first = true;
+            foreach (var parameter in methodGenerationContext.SqlParameters)
+            {
+                if (parameter.Name == "id")
+                {
+                    continue;
+                }
+
+                if (!first)
+                {
+                    builder.Append(", ");
+                }
+
+                var entityProperty = entityType.FindMember(parameter.Name);
+                if (entityProperty == null)
+                {
+                    methodGenerationContext.ClassGenerationContext.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(SP0004, parameter.Locations.FirstOrDefault(), entityType.ToDisplayString(), parameter.Name));
+                    continue;
+                }
+
+                builder.Append(entityProperty.Name);
+                builder.Append(" = ");
+                builder.Append("@" + NameMapper.MapName(parameter.Name));
+                first = false;
+            }
+
+            AppendFilterById(builder);
+            return builder.ToString();
+        }
+
+        if (canonicalOperationName == "Insert")
+        {
+            var builder = new StringBuilder();
+            builder.Append("INSERT INTO ");
+            builder.Append(entityType.Name);
+            builder.Append("(");
+            bool first = true;
+            foreach (var parameter in methodGenerationContext.SqlParameters)
+            {
+                if (!first)
+                {
+                    builder.Append(", ");
+                }
+
+                var entityProperty = entityType.FindMember(parameter.Name);
+                if (entityProperty == null)
+                {
+                    methodGenerationContext.ClassGenerationContext.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(SP0004, parameter.Locations.FirstOrDefault(), entityType.ToDisplayString(), parameter.Name));
+                    continue;
+                }
+
+                builder.Append(entityProperty.Name);
+                first = false;
+            }
+
+            builder.Append(") VALUES (");
+            first = true;
+            foreach (var parameter in methodGenerationContext.SqlParameters)
+            {
+                if (!first)
+                {
+                    builder.Append(", ");
+                }
+
+                var entityProperty = entityType.FindMember(parameter.Name);
+                if (entityProperty == null)
+                {
+                    methodGenerationContext.ClassGenerationContext.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(SP0004, parameter.Locations.FirstOrDefault(), entityType.ToDisplayString(), parameter.Name));
+                    continue;
+                }
+
+                builder.Append("@" + NameMapper.MapName(parameter.Name));
+                first = false;
+            }
+
+            builder.Append(")");
+            return builder.ToString();
+        }
+
+        methodGenerationContext.ClassGenerationContext.GeneratorExecutionContext.ReportDiagnostic(Diagnostic.Create(SP0005, methodGenerationContext.MethodSymbol.Locations.FirstOrDefault(), methodGenerationContext.MethodSymbol.ToDisplayString()));
         return null;
 
-        void AppendFitlerById(StringBuilder builder)
+        void AppendFilterById(StringBuilder builder)
         {
             builder.Append(" WHERE ");
             var idMember = entityType.FindIdMember();
