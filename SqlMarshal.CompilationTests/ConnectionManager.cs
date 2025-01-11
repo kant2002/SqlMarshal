@@ -23,6 +23,9 @@ internal partial class ConnectionManager
     public partial IList<PersonInformation> GetResult();
 
     [SqlMarshal("persons_list")]
+    public partial void GetResultWithOut(out IList<PersonInformation> result);
+
+    [SqlMarshal("persons_list")]
     public partial IList<(int Id, string Name)> GetTupleResult();
 
     [SqlMarshal("persons_by_page")]

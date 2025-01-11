@@ -153,7 +153,7 @@ internal static class Extensions
         return returnType;
     }
 
-    internal static bool IsList(ITypeSymbol returnType) => returnType.Name == "IList" || returnType.Name == "List";
+    internal static bool IsList(this ITypeSymbol returnType) => returnType.Name == "IList" || returnType.Name == "List";
 
     internal static bool IsEnumerable(ITypeSymbol returnType) => returnType.Name == "IEnumerable";
 

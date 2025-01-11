@@ -616,7 +616,7 @@ namespace {namespaceName}
 
             if (isList)
             {
-                source.AppendLine($@"var __result = new List<{(IsTuple(itemType) ? itemType.ToDisplayString() : itemType.Name)}>();");
+                source.AppendLine($@"var __result = {(methodGenerationContext.OutputResultsetParameter?.RefKind == RefKind.Ref ? $"{methodGenerationContext.OutputResultsetParameter.Name} ?? " : string.Empty)}new List<{(IsTuple(itemType) ? itemType.ToDisplayString() : itemType.Name)}>();");
                 if (isTask)
                 {
                     source.AppendLine($"while (await reader.ReadAsync({cancellationToken}).ConfigureAwait(false))");
@@ -1106,7 +1106,14 @@ namespace {namespaceName}
             {
                 this.MapResults(source, methodGenerationContext, methodSymbol, parameters, itemType, hasNullableAnnotations, isList, isTask);
                 MarshalOutputParameters(source, parameters, hasNullableAnnotations);
-                source.AppendLine(ReturnStatement(IdentifierName("__result")).NormalizeWhitespace().ToFullString());
+                if (methodGenerationContext.OutputResultsetParameter != null)
+                {
+                    source.AppendLine($"{methodGenerationContext.OutputResultsetParameter.Name} = __result;");
+                }
+                else
+                {
+                    source.AppendLine(ReturnStatement(IdentifierName("__result")).NormalizeWhitespace().ToFullString());
+                }
             }
         }
 
