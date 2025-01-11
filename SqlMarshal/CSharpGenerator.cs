@@ -7,6 +7,9 @@
 namespace SqlMarshal;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
+using System.Linq;
 
 /// <summary>
 /// Stored procedures generator for C#.
@@ -59,5 +62,34 @@ internal sealed class RepositoryAttribute: System.Attribute
             pi.AddSource("SqlMarshalAttribute.cs", CSharpAttributeSource);
         });
         context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+    }
+
+    internal class SyntaxReceiver : ISqlMarshalSyntaxReceiver
+    {
+        public List<IMethodSymbol> Methods { get; } = new List<IMethodSymbol>();
+
+        public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
+        {
+            // any field with at least one attribute is a candidate for property generation
+            if (context.Node is MethodDeclarationSyntax methodDeclarationSyntax)
+            {
+                // Get the symbol being declared by the field, and keep it if its annotated
+                IMethodSymbol? methodSymbol = context.SemanticModel.GetDeclaredSymbol(context.Node) as IMethodSymbol;
+                if (methodSymbol == null)
+                {
+                    return;
+                }
+
+                if (methodSymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "SqlMarshalAttribute"))
+                {
+                    this.Methods.Add(methodSymbol);
+                }
+
+                if (methodSymbol.ContainingType.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "RepositoryAttribute"))
+                {
+                    this.Methods.Add(methodSymbol);
+                }
+            }
+        }
     }
 }
