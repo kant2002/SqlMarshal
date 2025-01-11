@@ -23,10 +23,16 @@ internal class MethodGenerationContext
         this.DbContextParameter = GetDbContextParameter(methodSymbol);
         this.CustomSqlParameter = GetCustomSqlParameter(methodSymbol);
         this.CancellationTokenParameter = GetCancellationTokenParameter(methodSymbol);
+        this.OutputResultsetParameter = GetOutputResultsetParameter(methodSymbol);
         var parameters = methodSymbol.Parameters;
         if (this.ConnectionParameter != null)
         {
             parameters = parameters.Remove(this.ConnectionParameter);
+        }
+
+        if (this.OutputResultsetParameter != null)
+        {
+            parameters = parameters.Remove(this.OutputResultsetParameter);
         }
 
         if (this.DbContextParameter != null)
@@ -60,6 +66,8 @@ internal class MethodGenerationContext
 
     internal IParameterSymbol? ConnectionParameter { get; }
 
+    internal IParameterSymbol? OutputResultsetParameter { get; }
+
     internal IParameterSymbol? TransactionParameter { get; }
 
     internal IParameterSymbol? DbContextParameter { get; }
@@ -74,9 +82,9 @@ internal class MethodGenerationContext
 
     internal bool IsDataReader => this.MethodSymbol.ReturnType.Name == "DbDataReader";
 
-    internal ITypeSymbol ReturnType => this.MethodSymbol.ReturnType.UnwrapTaskType();
+    internal ITypeSymbol ReturnType => this.OutputResultsetParameter?.Type ?? this.MethodSymbol.ReturnType.UnwrapTaskType();
 
-    internal bool IsList => IsList(this.ReturnType);
+    internal bool IsList => this.ReturnType.IsList();
 
     internal bool IsEnumerable => IsEnumerable(this.ReturnType);
 
@@ -87,6 +95,19 @@ internal class MethodGenerationContext
         foreach (var parameterSymbol in methodSymbol.Parameters)
         {
             if (parameterSymbol.Type.IsDbConnection())
+            {
+                return parameterSymbol;
+            }
+        }
+
+        return null;
+    }
+
+    private static IParameterSymbol? GetOutputResultsetParameter(IMethodSymbol methodSymbol)
+    {
+        foreach (var parameterSymbol in methodSymbol.Parameters)
+        {
+            if (parameterSymbol.Type.IsList() && (parameterSymbol.RefKind == RefKind.Out || parameterSymbol.RefKind == RefKind.Ref))
             {
                 return parameterSymbol;
             }

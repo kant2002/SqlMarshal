@@ -86,6 +86,13 @@ internal class Program
             WritePerson(personInfo);
         }
 
+        connectionManager.GetResultWithOut(out var samePersons);
+        WriteLine("Same 10 rows from persons_list SP using out parameter");
+        foreach (var personInfo in persons.Take(10))
+        {
+            WritePerson(personInfo);
+        }
+
         var persons2 = connectionManager.GetResultByPage(2, out var totalCount);
         WriteLine("Print results of persons_by_page SP");
         foreach (var personInfo in persons2)
