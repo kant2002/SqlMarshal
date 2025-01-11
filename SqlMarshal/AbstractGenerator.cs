@@ -38,7 +38,7 @@ public abstract class AbstractGenerator : ISourceGenerator
     public void Execute(GeneratorExecutionContext context)
     {
         // Retrieve the populated receiver
-        if (!(context.SyntaxContextReceiver is SyntaxReceiver receiver))
+        if (!(context.SyntaxContextReceiver is ISqlMarshalSyntaxReceiver receiver))
         {
             return;
         }
@@ -81,6 +81,23 @@ public abstract class AbstractGenerator : ISourceGenerator
             }
 
             context.AddSource($"{key.ToDisplayString().Replace(".", "_")}_sp.cs", SourceText.From(sourceCode, Encoding.UTF8));
+        }
+    }
+
+    internal static IEnumerable<string> GetUsings(ClassGenerationContext classGenerationContext)
+    {
+        yield return "System";
+        if (classGenerationContext.HasCollections)
+        {
+            yield return "System.Collections.Generic";
+        }
+
+        yield return "System.Data.Common";
+        yield return "System.Linq";
+        if (classGenerationContext.HasEfCore)
+        {
+            yield return "Microsoft.EntityFrameworkCore";
+            yield return "Microsoft.EntityFrameworkCore.Storage";
         }
     }
 
@@ -392,18 +409,9 @@ namespace {namespaceName}
 {{
 ");
         source.PushIndent();
-        source.AppendLine("using System;");
-        if (classGenerationContext.HasCollections)
+        foreach (var usedNamespace in GetUsings(classGenerationContext))
         {
-            source.AppendLine("using System.Collections.Generic;");
-        }
-
-        source.AppendLine("using System.Data.Common;");
-        source.AppendLine("using System.Linq;");
-        if (hasEfCore)
-        {
-            source.AppendLine("using Microsoft.EntityFrameworkCore;");
-            source.AppendLine("using Microsoft.EntityFrameworkCore.Storage;");
+            source.AppendLine($"using {usedNamespace};");
         }
 
         source.AppendLine();
@@ -1103,35 +1111,6 @@ namespace {namespaceName}
                 {this.GetCloseConnectionStatement(methodGenerationContext)}
             }}
 ");
-        }
-    }
-
-    internal class SyntaxReceiver : ISyntaxContextReceiver
-    {
-        public List<IMethodSymbol> Methods { get; } = new List<IMethodSymbol>();
-
-        public void OnVisitSyntaxNode(GeneratorSyntaxContext context)
-        {
-            // any field with at least one attribute is a candidate for property generation
-            if (context.Node is MethodDeclarationSyntax methodDeclarationSyntax)
-            {
-                // Get the symbol being declared by the field, and keep it if its annotated
-                IMethodSymbol? methodSymbol = context.SemanticModel.GetDeclaredSymbol(context.Node) as IMethodSymbol;
-                if (methodSymbol == null)
-                {
-                    return;
-                }
-
-                if (methodSymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "SqlMarshalAttribute"))
-                {
-                    this.Methods.Add(methodSymbol);
-                }
-
-                if (methodSymbol.ContainingType.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "RepositoryAttribute"))
-                {
-                    this.Methods.Add(methodSymbol);
-                }
-            }
         }
     }
 }
