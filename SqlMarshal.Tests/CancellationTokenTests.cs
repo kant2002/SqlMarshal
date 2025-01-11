@@ -71,8 +71,8 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            var result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
-            return (int)result!;
+            var __result = await command.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
+            return (int)__result!;
         }
     }
 }";
@@ -193,7 +193,7 @@ namespace Foo
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
             using var reader = await command.ExecuteReaderAsync(cancellationToken).ConfigureAwait(false);
-            var result = new List<Item>();
+            var __result = new List<Item>();
             while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
             {
                 var item = new Item();
@@ -203,11 +203,11 @@ namespace Foo
                 item.Int32Value = (int)value_1;
                 var value_2 = reader.GetValue(2);
                 item.NullableInt32Value = value_2 == DBNull.Value ? (int?)null : (int)value_2;
-                result.Add(item);
+                __result.Add(item);
             }
 
             await reader.CloseAsync().ConfigureAwait(false);
-            return result;
+            return __result;
         }
     }
 }";
@@ -269,9 +269,9 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id OUTPUT"";
-            var result = await this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToListAsync(cancellationToken).ConfigureAwait(false);
+            var __result = await this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToListAsync(cancellationToken).ConfigureAwait(false);
             personId = personIdParameter.Value == DBNull.Value ? (int?)null : (int)personIdParameter.Value;
-            return result;
+            return __result;
         }
     }
 }";

@@ -69,8 +69,8 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            var result = command.ExecuteScalar();
-            return (int)result!;
+            var __result = command.ExecuteScalar();
+            return (int)__result!;
         }
     }
 }";
@@ -135,9 +135,9 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id OUTPUT"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            var result = command.ExecuteScalar();
+            var __result = command.ExecuteScalar();
             personId = (int)personIdParameter.Value;
-            return (int)result!;
+            return (int)__result!;
         }
     }
 }";
@@ -202,9 +202,9 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id OUTPUT"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            var result = command.ExecuteScalar();
+            var __result = command.ExecuteScalar();
             personId = (int)personIdParameter.Value!;
-            return (int)result!;
+            return (int)__result!;
         }
     }
 }";
@@ -261,7 +261,7 @@ namespace Foo
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
             using var reader = command.ExecuteReader();
-            var result = new List<Item>();
+            var __result = new List<Item>();
             while (reader.Read())
             {
                 var item = new Item();
@@ -271,11 +271,11 @@ namespace Foo
                 item.Int32Value = (int)value_1;
                 var value_2 = reader.GetValue(2);
                 item.NullableInt32Value = value_2 == DBNull.Value ? (int?)null : (int)value_2;
-                result.Add(item);
+                __result.Add(item);
             }
 
             reader.Close();
-            return result;
+            return __result;
         }
     }
 }";
@@ -337,15 +337,15 @@ namespace Foo
                 return null;
             }
 
-            var result = new Item();
+            var __result = new Item();
             var value_0 = reader.GetValue(0);
-            result.StringValue = value_0 == DBNull.Value ? (string?)null : (string)value_0;
+            __result.StringValue = value_0 == DBNull.Value ? (string?)null : (string)value_0;
             var value_1 = reader.GetValue(1);
-            result.Int32Value = (int)value_1;
+            __result.Int32Value = (int)value_1;
             var value_2 = reader.GetValue(2);
-            result.NullableInt32Value = value_2 == DBNull.Value ? (int?)null : (int)value_2;
+            __result.NullableInt32Value = value_2 == DBNull.Value ? (int?)null : (int)value_2;
             reader.Close();
-            return result;
+            return __result;
         }
     }
 }";
@@ -407,15 +407,15 @@ namespace Foo
                 return null;
             }
 
-            var result = new Item();
+            var __result = new Item();
             var value_0 = reader.GetValue(0);
-            result.StringValue = (string)value_0;
+            __result.StringValue = (string)value_0;
             var value_1 = reader.GetValue(1);
-            result.Int32Value = (int)value_1;
+            __result.Int32Value = (int)value_1;
             var value_2 = reader.GetValue(2);
-            result.NullableInt32Value = value_2 == DBNull.Value ? (int?)null : (int)value_2;
+            __result.NullableInt32Value = value_2 == DBNull.Value ? (int?)null : (int)value_2;
             reader.Close();
-            return result;
+            return __result;
         }
     }
 }";
@@ -477,15 +477,15 @@ namespace Foo
                 throw new InvalidOperationException(""No data returned from command."");
             }
 
-            var result = new Item();
+            var __result = new Item();
             var value_0 = reader.GetValue(0);
-            result.StringValue = (string)value_0;
+            __result.StringValue = (string)value_0;
             var value_1 = reader.GetValue(1);
-            result.Int32Value = (int)value_1;
+            __result.Int32Value = (int)value_1;
             var value_2 = reader.GetValue(2);
-            result.NullableInt32Value = value_2 == DBNull.Value ? (int?)null : (int)value_2;
+            __result.NullableInt32Value = value_2 == DBNull.Value ? (int?)null : (int)value_2;
             reader.Close();
-            return result;
+            return __result;
         }
     }
 }";
@@ -542,7 +542,7 @@ namespace Foo
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
             using var reader = command.ExecuteReader();
-            var result = new List<Item>();
+            var __result = new List<Item>();
             while (reader.Read())
             {
                 var item = new Item();
@@ -552,11 +552,11 @@ namespace Foo
                 item.Int32Value = (int)value_1;
                 var value_2 = reader.GetValue(2);
                 item.NullableInt32Value = value_2 == DBNull.Value ? (int?)null : (int)value_2;
-                result.Add(item);
+                __result.Add(item);
             }
 
             reader.Close();
-            return result;
+            return __result;
         }
     }
 }";
@@ -623,8 +623,8 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            var result = command.ExecuteScalar();
-            return (int)result!;
+            var __result = command.ExecuteScalar();
+            return (int)__result!;
         }
     }
 }";
@@ -690,8 +690,8 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            var result = command.ExecuteScalar();
-            return (int)result!;
+            var __result = command.ExecuteScalar();
+            return (int)__result!;
         }
     }
 }";
@@ -741,16 +741,16 @@ namespace Foo
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
             using var reader = command.ExecuteReader();
-            var result = new List<String>();
+            var __result = new List<String>();
             while (reader.Read())
             {
                 var value_0 = reader.GetValue(0);
                 var item = (string)value_0;
-                result.Add(item);
+                __result.Add(item);
             }
 
             reader.Close();
-            return result;
+            return __result;
         }
     }
 }";
@@ -800,19 +800,19 @@ namespace Foo
             var sqlQuery = @""sp_TestSP"";
             command.CommandText = sqlQuery;
             using var reader = command.ExecuteReader();
-            var result = new List<(string, int)>();
+            var __result = new List<(string, int)>();
             while (reader.Read())
             {
                 var value_0 = reader.GetValue(0);
                 var value_1 = reader.GetValue(1);
-                result.Add((
+                __result.Add((
                     (string)value_0,
                     (int)value_1
                 ));
             }
 
             reader.Close();
-            return result;
+            return __result;
         }
     }
 }";

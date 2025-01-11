@@ -69,8 +69,8 @@ namespace Foo
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
-            var result = command.ExecuteReader();
-            return result;
+            var __result = command.ExecuteReader();
+            return __result;
         }
     }
 }";

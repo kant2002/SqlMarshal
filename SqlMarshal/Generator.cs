@@ -379,11 +379,11 @@ internal sealed class RepositoryAttribute: System.Attribute
         {
             if (isTask)
             {
-                source.AppendLine($@"var result = await command.ExecuteScalarAsync({cancellationToken}).ConfigureAwait(false);");
+                source.AppendLine($@"var __result = await command.ExecuteScalarAsync({cancellationToken}).ConfigureAwait(false);");
             }
             else
             {
-                source.AppendLine($@"var result = command.ExecuteScalar();");
+                source.AppendLine($@"var __result = command.ExecuteScalar();");
             }
         }
 
@@ -391,7 +391,7 @@ internal sealed class RepositoryAttribute: System.Attribute
 
         if (hasResult)
         {
-            source.AppendLine($@"return {MarshalValue("result!", hasNullableAnnotations, returnType)};");
+            source.AppendLine($@"return {MarshalValue("__result!", hasNullableAnnotations, returnType)};");
         }
     }
 
@@ -616,7 +616,7 @@ namespace {namespaceName}
 
             if (isList)
             {
-                source.AppendLine($@"var result = new List<{(IsTuple(itemType) ? itemType.ToDisplayString() : itemType.Name)}>();");
+                source.AppendLine($@"var __result = new List<{(IsTuple(itemType) ? itemType.ToDisplayString() : itemType.Name)}>();");
                 if (isTask)
                 {
                     source.AppendLine($"while (await reader.ReadAsync({cancellationToken}).ConfigureAwait(false))");
@@ -632,7 +632,7 @@ namespace {namespaceName}
                 {
                     source.AppendLine($@"var value_0 = reader.GetValue(0);");
                     source.AppendLine($@"var item = {MarshalValue($"value_0", hasNullableAnnotations, itemType)};");
-                    source.AppendLine("result.Add(item);");
+                    source.AppendLine("__result.Add(item);");
                 }
                 else if (IsTuple(itemType))
                 {
@@ -642,7 +642,7 @@ namespace {namespaceName}
                         source.AppendLine($@"var value_{i} = reader.GetValue({i});");
                     }
 
-                    source.AppendLine("result.Add((");
+                    source.AppendLine("__result.Add((");
                     source.PushIndent();
                     for (var i = 0; i < types.Length; i++)
                     {
@@ -671,7 +671,7 @@ namespace {namespaceName}
                         i++;
                     }
 
-                    source.AppendLine("result.Add(item);");
+                    source.AppendLine("__result.Add(item);");
                 }
 
                 source.PopIndent();
@@ -711,13 +711,13 @@ namespace {namespaceName}
                 source.PopIndent();
                 source.AppendLine("}");
                 source.AppendLine();
-                source.AppendLine($@"var result = new {itemType.Name}();");
+                source.AppendLine($@"var __result = new {itemType.Name}();");
                 int i = 0;
                 foreach (var propertyName in itemType.GetMembers().OfType<IPropertySymbol>())
                 {
                     var dataReaderMethodName = GetDataReaderMethod(propertyName.Type);
                     source.AppendLine($@"var value_{i} = reader.GetValue({i});");
-                    source.AppendLine($@"result.{propertyName.Name} = {MarshalValue($"value_{i}", hasNullableAnnotations, propertyName.Type)};");
+                    source.AppendLine($@"__result.{propertyName.Name} = {MarshalValue($"value_{i}", hasNullableAnnotations, propertyName.Type)};");
                     i++;
                 }
 
@@ -742,16 +742,16 @@ namespace {namespaceName}
             {
                 if (isList)
                 {
-                    source.AppendLine($"var result = await this.{contextName}.{itemTypeProperty}{nullableAnnotations}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).ToListAsync({cancellationToken}).ConfigureAwait(false);");
+                    source.AppendLine($"var __result = await this.{contextName}.{itemTypeProperty}{nullableAnnotations}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).ToListAsync({cancellationToken}).ConfigureAwait(false);");
                 }
                 else
                 {
-                    source.AppendLine($"{itemType} result = null!;");
+                    source.AppendLine($"{itemType} __result = null!;");
                     source.AppendLine($"var asyncEnumerable = this.{contextName}.{itemTypeProperty}{nullableAnnotations}.FromSqlRaw(sqlQuery{(parameters.Length == 0 ? string.Empty : ", parameters")}).AsAsyncEnumerable();");
                     source.AppendLine($"await foreach (var current in asyncEnumerable)");
                     source.AppendLine("{");
                     source.PushIndent();
-                    source.AppendLine($"result = current;");
+                    source.AppendLine($"__result = current;");
                     source.AppendLine($"break;");
                     source.PopIndent();
                     source.AppendLine("}");
@@ -763,7 +763,7 @@ namespace {namespaceName}
                 string materializeResults = isList
                     ? "ToList"
                     : methodGenerationContext.ClassGenerationContext.NullableContextOptions == NullableContextOptions.Enable ? "AsEnumerable().First" : "AsEnumerable().FirstOrDefault";
-                source.AppendLine($"var result = this.{contextName}.{itemTypeProperty}{nullableAnnotations}.FromSqlRaw(sqlQuery{parameterString}).{materializeResults}();");
+                source.AppendLine($"var __result = this.{contextName}.{itemTypeProperty}{nullableAnnotations}.FromSqlRaw(sqlQuery{parameterString}).{materializeResults}();");
             }
         }
     }
@@ -1075,11 +1075,11 @@ namespace {namespaceName}
         }
         else if (methodGenerationContext.IsDataReader)
         {
-            var resultDeclaration = VariableDeclarator(identifier: Identifier("result"), argumentList: null, initializer: EqualsValueClause(ParseExpression("command.ExecuteReader()")));
+            var resultDeclaration = VariableDeclarator(identifier: Identifier("__result"), argumentList: null, initializer: EqualsValueClause(ParseExpression("command.ExecuteReader()")));
             source.AppendLine(LocalDeclarationStatement(VariableDeclaration(
                 type: IdentifierName(Identifier("var")),
                 variables: SeparatedList(new[] { resultDeclaration }))).NormalizeWhitespace().ToFullString());
-            source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
+            source.AppendLine(ReturnStatement(IdentifierName("__result")).NormalizeWhitespace().ToFullString());
         }
         else
         {
@@ -1093,7 +1093,7 @@ namespace {namespaceName}
                 this.MapResults(source, methodGenerationContext, methodSymbol, parameters, itemType, hasNullableAnnotations, isList, isTask);
 
                 MarshalOutputParameters(source, parameters, hasNullableAnnotations);
-                source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
+                source.AppendLine(ReturnStatement(IdentifierName("__result")).NormalizeWhitespace().ToFullString());
                 source.PopIndent();
                 source.Append($@"}}
             finally
@@ -1106,7 +1106,7 @@ namespace {namespaceName}
             {
                 this.MapResults(source, methodGenerationContext, methodSymbol, parameters, itemType, hasNullableAnnotations, isList, isTask);
                 MarshalOutputParameters(source, parameters, hasNullableAnnotations);
-                source.AppendLine(ReturnStatement(IdentifierName("result")).NormalizeWhitespace().ToFullString());
+                source.AppendLine(ReturnStatement(IdentifierName("__result")).NormalizeWhitespace().ToFullString());
             }
         }
 

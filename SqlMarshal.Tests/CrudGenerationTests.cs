@@ -63,7 +63,7 @@ namespace Foo
             var sqlQuery = @""SELECT id, name FROM test_entity"";
             command.CommandText = sqlQuery;
             using var reader = command.ExecuteReader();
-            var result = new List<TestEntity>();
+            var __result = new List<TestEntity>();
             while (reader.Read())
             {
                 var item = new TestEntity();
@@ -71,11 +71,11 @@ namespace Foo
                 item.Id = (int)value_0;
                 var value_1 = reader.GetValue(1);
                 item.Name = value_1 == DBNull.Value ? (string?)null : (string)value_1;
-                result.Add(item);
+                __result.Add(item);
             }
 
             reader.Close();
-            return result;
+            return __result;
         }
     }
 }";
@@ -148,13 +148,13 @@ namespace Foo
                 return null;
             }
 
-            var result = new TestEntity();
+            var __result = new TestEntity();
             var value_0 = reader.GetValue(0);
-            result.Id = (int)value_0;
+            __result.Id = (int)value_0;
             var value_1 = reader.GetValue(1);
-            result.Name = value_1 == DBNull.Value ? (string?)null : (string)value_1;
+            __result.Name = value_1 == DBNull.Value ? (string?)null : (string)value_1;
             reader.Close();
-            return result;
+            return __result;
         }
     }
 }";
@@ -211,8 +211,8 @@ namespace Foo
 
             var sqlQuery = @""SELECT COUNT(1) FROM test_entity"";
             command.CommandText = sqlQuery;
-            var result = command.ExecuteScalar();
-            return (int)result!;
+            var __result = command.ExecuteScalar();
+            return (int)__result!;
         }
     }
 }";
