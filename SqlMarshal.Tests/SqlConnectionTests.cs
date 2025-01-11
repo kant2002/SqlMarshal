@@ -26,7 +26,7 @@ namespace Foo
         public partial int M(int clientId, string? personId);
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -91,7 +91,7 @@ namespace Foo
         public partial int M(int clientId, out int personId);
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -158,7 +158,7 @@ namespace Foo
         public partial int M(int clientId, out int personId);
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Enable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Enable);
 
         Assert.IsNotNull(output);
 
@@ -232,7 +232,7 @@ namespace Foo
         public partial IList<Item> M()
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -303,7 +303,7 @@ namespace Foo
         public partial void M(out IList<Item> result)
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -374,7 +374,7 @@ namespace Foo
         public partial void M(ref IList<Item> result)
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -445,7 +445,7 @@ namespace Foo
         public partial Item M()
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -515,7 +515,7 @@ namespace Foo
         public partial Item? M()
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Enable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Enable);
 
         Assert.IsNotNull(output);
 
@@ -585,7 +585,7 @@ namespace Foo
         public partial Item M()
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Enable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Enable);
 
         Assert.IsNotNull(output);
 
@@ -655,7 +655,7 @@ namespace Foo
         public partial IList<Item> M()
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Enable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Enable);
 
         Assert.IsNotNull(output);
 
@@ -722,7 +722,7 @@ namespace Foo
         private partial int M(int clientId, string? personId);
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -789,7 +789,7 @@ namespace Foo
         private partial int M(int clientId, string? personId);
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -854,7 +854,7 @@ namespace Foo
         public partial IList<string> M()
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Enable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Enable);
 
         Assert.IsNotNull(output);
 
@@ -913,7 +913,7 @@ namespace Foo
         public partial IList<(string,int)> M()
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Enable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Enable);
 
         Assert.IsNotNull(output);
 

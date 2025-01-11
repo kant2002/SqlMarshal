@@ -26,7 +26,7 @@ namespace Foo
         public partial int M(DbTransaction transaction, int clientId, string? personId);
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -90,7 +90,7 @@ namespace Foo
         public partial IList<Item> M(DbTransaction transaction)
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 

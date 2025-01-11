@@ -26,7 +26,7 @@ namespace Foo
         public partial System.Data.Common.DbDataReader M(int clientId, string? personId);
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 

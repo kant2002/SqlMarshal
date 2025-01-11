@@ -28,7 +28,7 @@ namespace Foo
         public partial Task<int> M(int clientId, string? personId, CancellationToken cancellationToken);
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -93,7 +93,7 @@ namespace Foo
         public partial Task M(int clientId, string? personId, CancellationToken cancellationToken);
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -164,7 +164,7 @@ namespace Foo
         public partial Task<IList<Item>> M(CancellationToken cancellationToken)
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -226,7 +226,7 @@ namespace Foo
         public partial Task<IList<Item>> M(int clientId, out int? personId, CancellationToken cancellationToken)
     }
 }";
-        string output = this.GetGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
