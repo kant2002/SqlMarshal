@@ -70,8 +70,8 @@ namespace Foo
             command.CommandText = sqlQuery;
             command.Parameters.AddRange(parameters);
             command.Transaction = transaction;
-            var result = command.ExecuteScalar();
-            return (int)result!;
+            var __result = command.ExecuteScalar();
+            return (int)__result!;
         }
     }
 }";
@@ -119,8 +119,8 @@ namespace Foo
 
             var sqlQuery = @""sp_TestSP"";
             this.dbContext.Database.UseTransaction(transaction);
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery).ToList();
-            return result;
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery).ToList();
+            return __result;
         }
     }
 }";

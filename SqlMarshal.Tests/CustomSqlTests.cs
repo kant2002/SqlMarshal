@@ -68,8 +68,8 @@ namespace Foo
 
             command.CommandText = sql;
             command.Parameters.AddRange(parameters);
-            var result = command.ExecuteScalar();
-            return (int)result!;
+            var __result = command.ExecuteScalar();
+            return (int)__result!;
         }
     }
 }";
@@ -125,7 +125,7 @@ namespace Foo
 
             command.CommandText = sql;
             using var reader = command.ExecuteReader();
-            var result = new List<Item>();
+            var __result = new List<Item>();
             while (reader.Read())
             {
                 var item = new Item();
@@ -135,11 +135,11 @@ namespace Foo
                 item.Int32Value = (int)value_1;
                 var value_2 = reader.GetValue(2);
                 item.NullableInt32Value = value_2 == DBNull.Value ? (int?)null : (int)value_2;
-                result.Add(item);
+                __result.Add(item);
             }
 
             reader.Close();
-            return result;
+            return __result;
         }
     }
 }";

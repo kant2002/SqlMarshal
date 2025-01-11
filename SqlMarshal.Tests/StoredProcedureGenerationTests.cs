@@ -52,8 +52,8 @@ namespace Foo
             using var command = connection.CreateCommand();
 
             var sqlQuery = @""sp_TestSP"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery).ToList();
-            return result;
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery).ToList();
+            return __result;
         }
     }
 }";
@@ -100,8 +100,8 @@ namespace Foo
             using var command = connection.CreateCommand();
 
             var sqlQuery = @""sp_TestSP"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery).ToList();
-            return result;
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery).ToList();
+            return __result;
         }
     }
 }";
@@ -148,8 +148,8 @@ namespace Foo
             using var command = connection.CreateCommand();
 
             var sqlQuery = @""sp_TestSP"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery).AsEnumerable().FirstOrDefault();
-            return result;
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery).AsEnumerable().FirstOrDefault();
+            return __result;
         }
     }
 }";
@@ -196,8 +196,8 @@ namespace Foo
             using var command = connection.CreateCommand();
 
             var sqlQuery = @""sp_TestSP"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery).AsEnumerable().First();
-            return result;
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery).AsEnumerable().First();
+            return __result;
         }
     }
 }";
@@ -258,8 +258,8 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
-            return result;
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
+            return __result;
         }
     }
 }";
@@ -326,8 +326,8 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
-            var result = this.context.Items.FromSqlRaw(sqlQuery, parameters).ToList();
-            return result;
+            var __result = this.context.Items.FromSqlRaw(sqlQuery, parameters).ToList();
+            return __result;
         }
     }
 }";
@@ -395,8 +395,8 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
-            var result = this.context.PersonItems.FromSqlRaw(sqlQuery, parameters).ToList();
-            return result;
+            var __result = this.context.PersonItems.FromSqlRaw(sqlQuery, parameters).ToList();
+            return __result;
         }
     }
 }";
@@ -465,8 +465,8 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
-            var result = this.context.Persons.FromSqlRaw(sqlQuery, parameters).ToList();
-            return result;
+            var __result = this.context.Persons.FromSqlRaw(sqlQuery, parameters).ToList();
+            return __result;
         }
     }
 }";
@@ -535,8 +535,8 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
-            var result = this.context.Persons!.FromSqlRaw(sqlQuery, parameters).ToList();
-            return result;
+            var __result = this.context.Persons!.FromSqlRaw(sqlQuery, parameters).ToList();
+            return __result;
         }
     }
 }";
@@ -597,8 +597,8 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
-            return result;
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
+            return __result;
         }
     }
 }";
@@ -659,8 +659,8 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
-            return result;
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
+            return __result;
         }
     }
 }";
@@ -722,9 +722,9 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id OUTPUT"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
             personId = personIdParameter.Value == DBNull.Value ? (int?)null : (int)personIdParameter.Value;
-            return result;
+            return __result;
         }
     }
 }";
@@ -787,9 +787,9 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id OUTPUT"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
             personId = personIdParameter.Value == DBNull.Value ? (string?)null : (string)personIdParameter.Value;
-            return result;
+            return __result;
         }
     }
 }";
@@ -851,9 +851,9 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id OUTPUT"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
             personId = (int)personIdParameter.Value;
-            return result;
+            return __result;
         }
     }
 }";
@@ -916,9 +916,9 @@ namespace Foo
             };
 
             var sqlQuery = @""sp_TestSP @client_id, @person_id OUTPUT"";
-            var result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
+            var __result = this.dbContext.Items.FromSqlRaw(sqlQuery, parameters).ToList();
             personId = (int)personIdParameter.Value;
-            return result;
+            return __result;
         }
     }
 }";
@@ -985,8 +985,8 @@ namespace Foo
             this.dbContext.Database.OpenConnection();
             try
             {
-                var result = command.ExecuteScalar();
-                return (int)result!;
+                var __result = command.ExecuteScalar();
+                return (int)__result!;
             }
             finally
             {
@@ -1115,8 +1115,8 @@ namespace Foo
             this.dbContext.Database.OpenConnection();
             try
             {
-                var result = command.ExecuteScalar();
-                return (int)result!;
+                var __result = command.ExecuteScalar();
+                return (int)__result!;
             }
             finally
             {
@@ -1190,9 +1190,9 @@ namespace Foo
             this.dbContext.Database.OpenConnection();
             try
             {
-                var result = command.ExecuteScalar();
+                var __result = command.ExecuteScalar();
                 personId = personIdParameter.Value == DBNull.Value ? (string?)null : (string?)personIdParameter.Value;
-                return (int)result!;
+                return (int)__result!;
             }
             finally
             {
@@ -1266,9 +1266,9 @@ namespace Foo
             this.dbContext.Database.OpenConnection();
             try
             {
-                var result = command.ExecuteScalar();
+                var __result = command.ExecuteScalar();
                 personId = personIdParameter.Value == DBNull.Value ? (string?)null : (string?)personIdParameter.Value;
-                return (int)result!;
+                return (int)__result!;
             }
             finally
             {
@@ -1342,9 +1342,9 @@ namespace Foo
             this.dbContext.Database.OpenConnection();
             try
             {
-                var result = command.ExecuteScalar();
+                var __result = command.ExecuteScalar();
                 personId = personIdParameter.Value == DBNull.Value ? (string?)null : (string)personIdParameter.Value;
-                return (int)result!;
+                return (int)__result!;
             }
             finally
             {
@@ -1417,9 +1417,9 @@ namespace Foo
             this.dbContext.Database.OpenConnection();
             try
             {
-                var result = command.ExecuteScalar();
+                var __result = command.ExecuteScalar();
                 personId = (int)personIdParameter.Value;
-                return (int)result!;
+                return (int)__result!;
             }
             finally
             {
@@ -1476,8 +1476,8 @@ namespace Foo
             this.dbContext.Database.OpenConnection();
             try
             {
-                var result = command.ExecuteScalar();
-                return result! == DBNull.Value ? (int?)null : (int)result!;
+                var __result = command.ExecuteScalar();
+                return __result! == DBNull.Value ? (int?)null : (int)__result!;
             }
             finally
             {
@@ -1536,16 +1536,16 @@ namespace Foo
             try
             {
                 using var reader = command.ExecuteReader();
-                var result = new List<String>();
+                var __result = new List<String>();
                 while (reader.Read())
                 {
                     var value_0 = reader.GetValue(0);
                     var item = (string)value_0;
-                    result.Add(item);
+                    __result.Add(item);
                 }
 
                 reader.Close();
-                return result;
+                return __result;
             }
             finally
             {
@@ -1604,19 +1604,19 @@ namespace Foo
             try
             {
                 using var reader = command.ExecuteReader();
-                var result = new List<(string, int)>();
+                var __result = new List<(string, int)>();
                 while (reader.Read())
                 {
                     var value_0 = reader.GetValue(0);
                     var value_1 = reader.GetValue(1);
-                    result.Add((
+                    __result.Add((
                         (string)value_0,
                         (int)value_1
                     ));
                 }
 
                 reader.Close();
-                return result;
+                return __result;
             }
             finally
             {
