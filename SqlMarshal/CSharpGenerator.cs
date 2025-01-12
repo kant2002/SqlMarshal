@@ -7,9 +7,11 @@
 namespace SqlMarshal;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Collections.Generic;
 using System.Linq;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 /// <summary>
 /// Stored procedures generator for C#.
@@ -62,6 +64,32 @@ internal sealed class RepositoryAttribute: System.Attribute
             pi.AddSource("SqlMarshalAttribute.cs", CSharpAttributeSource);
         });
         context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+    }
+
+    /// <inheritdoc/>
+    protected override SyntaxNode GetParameterDeclaration(IMethodSymbol methodSymbol, IParameterSymbol parameter, int index)
+    {
+        var typeAsClause = ParseTypeName(parameter.Type.ToDisplayString()).WithTrailingTrivia(Whitespace(" "));
+        if (parameter.RefKind == RefKind.Out)
+        {
+            var parameterSyntax = Parameter(default, SyntaxTokenList.Create(Token(SyntaxKind.OutKeyword).WithTrailingTrivia(Whitespace(" "))), typeAsClause, Identifier(parameter.Name), @default: null);
+            return parameterSyntax;
+        }
+        else if (parameter.RefKind == RefKind.Ref)
+        {
+            var parameterSyntax = Parameter(default, SyntaxTokenList.Create(Token(SyntaxKind.RefKeyword).WithTrailingTrivia(Whitespace(" "))), typeAsClause, Identifier(parameter.Name), @default: null);
+            return parameterSyntax;
+        }
+        else if (methodSymbol.IsExtensionMethod && index == 0)
+        {
+            var parameterSyntax = Parameter(default, SyntaxTokenList.Create(Token(SyntaxKind.ThisKeyword).WithTrailingTrivia(Whitespace(" "))), typeAsClause, Identifier(parameter.Name), @default: null);
+            return parameterSyntax;
+        }
+        else
+        {
+            var parameterSyntax = Parameter(default, default, typeAsClause, Identifier(parameter.Name), @default: null);
+            return parameterSyntax;
+        }
     }
 
     internal class SyntaxReceiver : ISqlMarshalSyntaxReceiver

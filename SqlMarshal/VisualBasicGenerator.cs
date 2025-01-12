@@ -7,9 +7,11 @@
 namespace SqlMarshal;
 
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using System.Collections.Generic;
 using System.Linq;
+using static Microsoft.CodeAnalysis.VisualBasic.SyntaxFactory;
 
 /// <summary>
 /// Stored procedures generator for C#.
@@ -22,6 +24,8 @@ public class VisualBasicGenerator : AbstractGenerator
 ' Changes may cause incorrect behavior and will be lost if the code is
 ' regenerated.
 ' </auto-generated>
+
+Namespace SqlMarshal.Annotations
 
 <System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple:=True)>
 Friend NotInheritable Class SqlMarshalAttribute
@@ -57,6 +61,7 @@ Friend NotInheritable Class RepositoryAttribute
     Public Property EntityType As System.Type
 End Class
 
+End Namespace
 ";
 
     /// <inheritdoc/>
@@ -67,6 +72,27 @@ End Class
             pi.AddSource("SqlMarshalAttribute.vb", VisualBasicAttributeSource);
         });
         context.RegisterForSyntaxNotifications(() => new SyntaxReceiver());
+    }
+
+    /// <inheritdoc/>
+    protected override SyntaxNode GetParameterDeclaration(IMethodSymbol methodSymbol, IParameterSymbol parameter, int index)
+    {
+        var typeAsClause = SimpleAsClause(ParseTypeName(parameter.Type.ToDisplayString()).WithLeadingTrivia(Whitespace(" ")));
+        if (parameter.RefKind == RefKind.Out)
+        {
+            var parameterSyntax = Parameter(default, SyntaxTokenList.Create(Token(SyntaxKind.ByRefKeyword).WithTrailingTrivia(Whitespace(" "))), ModifiedIdentifier(parameter.Name).WithTrailingTrivia(Whitespace(" ")), typeAsClause, @default: null);
+            return parameterSyntax;
+        }
+        else if (parameter.RefKind == RefKind.Ref)
+        {
+            var parameterSyntax = Parameter(default, SyntaxTokenList.Create(Token(SyntaxKind.ByRefKeyword).WithTrailingTrivia(Whitespace(" "))), ModifiedIdentifier(parameter.Name).WithTrailingTrivia(Whitespace(" ")), typeAsClause, @default: null);
+            return parameterSyntax;
+        }
+        else
+        {
+            var parameterSyntax = Parameter(default, default, ModifiedIdentifier(parameter.Name).WithTrailingTrivia(Whitespace(" ")), typeAsClause, @default: null);
+            return parameterSyntax;
+        }
     }
 
     internal class SyntaxReceiver : ISqlMarshalSyntaxReceiver
