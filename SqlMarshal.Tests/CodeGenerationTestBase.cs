@@ -20,7 +20,7 @@ public class CodeGenerationTestBase
 {
     protected string GetCSharpGeneratedOutput(string source, NullableContextOptions nullableContextOptions)
     {
-        var syntaxTree = CSharpSyntaxTree.ParseText(source);
+        var syntaxTree = CSharpSyntaxTree.ParseText("using SqlMarshal.Annotations;\r\n" + source);
 
         var references = new List<MetadataReference>();
         Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -38,7 +38,7 @@ public class CodeGenerationTestBase
             "foo",
             new SyntaxTree[] { syntaxTree },
             references,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: nullableContextOptions));
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, nullableContextOptions: nullableContextOptions, usings: new[] { "SqlMarshal.Annotations" }));
 
         // var compileDiagnostics = compilation.GetDiagnostics();
         // Assert.IsFalse(compileDiagnostics.Any(d => d.Severity == DiagnosticSeverity.Error), "Failed: " + compileDiagnostics.FirstOrDefault()?.GetMessage());

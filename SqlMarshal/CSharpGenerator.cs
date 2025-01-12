@@ -26,33 +26,36 @@ public class CSharpGenerator : AbstractGenerator
 // </auto-generated>
 #nullable enable
 
-[System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=true)]
-internal sealed class SqlMarshalAttribute: System.Attribute
+namespace SqlMarshal.Annotations
 {
-    public SqlMarshalAttribute()
-        => (StoredProcedureName) = (string.Empty);
-
-    public SqlMarshalAttribute(string name)
-        => (StoredProcedureName) = (name);
-
-    public string StoredProcedureName { get; }
-}
-
-[System.AttributeUsage(System.AttributeTargets.Parameter, AllowMultiple=false)]
-internal sealed class RawSqlAttribute: System.Attribute
-{
-    public RawSqlAttribute() {}
-}
-
-[System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple=false)]
-internal sealed class RepositoryAttribute: System.Attribute
-{
-    public RepositoryAttribute(global::System.Type entityType)
+    [System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple=true)]
+    internal sealed class SqlMarshalAttribute: System.Attribute
     {
-        EntityType = entityType;
+        public SqlMarshalAttribute()
+            => (StoredProcedureName) = (string.Empty);
+
+        public SqlMarshalAttribute(string name)
+            => (StoredProcedureName) = (name);
+
+        public string StoredProcedureName { get; }
     }
 
-    public global::System.Type EntityType { get; }
+    [System.AttributeUsage(System.AttributeTargets.Parameter, AllowMultiple=false)]
+    internal sealed class RawSqlAttribute: System.Attribute
+    {
+        public RawSqlAttribute() {}
+    }
+
+    [System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple=false)]
+    internal sealed class RepositoryAttribute: System.Attribute
+    {
+        public RepositoryAttribute(global::System.Type entityType)
+        {
+            EntityType = entityType;
+        }
+
+        public global::System.Type EntityType { get; }
+    }
 }
 ";
 
@@ -108,12 +111,12 @@ internal sealed class RepositoryAttribute: System.Attribute
                     return;
                 }
 
-                if (methodSymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "SqlMarshalAttribute"))
+                if (methodSymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "SqlMarshal.Annotations.SqlMarshalAttribute"))
                 {
                     this.Methods.Add(methodSymbol);
                 }
 
-                if (methodSymbol.ContainingType.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "RepositoryAttribute"))
+                if (methodSymbol.ContainingType.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "SqlMarshal.Annotations.RepositoryAttribute"))
                 {
                     this.Methods.Add(methodSymbol);
                 }

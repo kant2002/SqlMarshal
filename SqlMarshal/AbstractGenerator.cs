@@ -42,14 +42,14 @@ public abstract class AbstractGenerator : ISourceGenerator
             return;
         }
 
-        INamedTypeSymbol? attributeSymbol = context.Compilation.GetTypeByMetadataName("SqlMarshalAttribute");
+        INamedTypeSymbol? attributeSymbol = context.Compilation.GetTypeByMetadataName("SqlMarshal.Annotations.SqlMarshalAttribute");
         if (attributeSymbol == null)
         {
             context.ReportDiagnostic(Diagnostic.Create(SP0001, null));
             return;
         }
 
-        INamedTypeSymbol? repositoryAttributeSymbol = context.Compilation.GetTypeByMetadataName("RepositoryAttribute");
+        INamedTypeSymbol? repositoryAttributeSymbol = context.Compilation.GetTypeByMetadataName("SqlMarshal.Annotations.RepositoryAttribute");
         if (repositoryAttributeSymbol == null)
         {
             context.ReportDiagnostic(Diagnostic.Create(SP0002, null));
