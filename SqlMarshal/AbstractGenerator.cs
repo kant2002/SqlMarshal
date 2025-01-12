@@ -11,7 +11,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 using static SqlMarshal.Extensions;
@@ -101,6 +100,15 @@ public abstract class AbstractGenerator : ISourceGenerator
         }
     }
 
+    /// <summary>
+    /// Gets code for parameter declaration.
+    /// </summary>
+    /// <param name="methodSymbol">Method symbol from which we copy parameter.</param>
+    /// <param name="parameter">Parameter to copy.</param>
+    /// <param name="index">Index of parameter to copy.</param>
+    /// <returns>Generated syntax node for the parameter.</returns>
+    protected abstract SyntaxNode GetParameterDeclaration(IMethodSymbol methodSymbol, IParameterSymbol parameter, int index);
+
     private static string GetAccessibility(Accessibility a)
     {
         return a switch
@@ -136,26 +144,6 @@ public abstract class AbstractGenerator : ISourceGenerator
         }
 
         return null;
-    }
-
-    private static string GetParameterDeclaration(IMethodSymbol methodSymbol, IParameterSymbol parameter, int index)
-    {
-        if (parameter.RefKind == RefKind.Out)
-        {
-            return $"out {parameter.Type.ToDisplayString()} {parameter.Name}";
-        }
-
-        if (parameter.RefKind == RefKind.Ref)
-        {
-            return $"ref {parameter.Type.ToDisplayString()} {parameter.Name}";
-        }
-
-        if (methodSymbol.IsExtensionMethod && index == 0)
-        {
-            return $"this {parameter.Type.ToDisplayString()} {parameter.Name}";
-        }
-
-        return $"{parameter.Type.ToDisplayString()} {parameter.Name}";
     }
 
     private static string GetParameterPassing(IParameterSymbol parameter)
@@ -929,7 +917,7 @@ namespace {namespaceName}
         var originalParameters = methodSymbol.Parameters;
 
         bool hasCustomSql = methodGenerationContext.CustomSqlParameter != null;
-        var signature = $"({string.Join(", ", originalParameters.Select((parameterSymbol, index) => GetParameterDeclaration(methodSymbol, parameterSymbol, index)))})";
+        var signature = $"({string.Join(", ", originalParameters.Select((parameterSymbol, index) => this.GetParameterDeclaration(methodSymbol, parameterSymbol, index)))})";
         var itemType = methodGenerationContext.ItemType;
         var getConnection = this.GetConnectionStatement(methodGenerationContext);
         var isList = methodGenerationContext.IsList || methodGenerationContext.IsEnumerable;
