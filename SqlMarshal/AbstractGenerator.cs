@@ -101,13 +101,11 @@ public abstract class AbstractGenerator : ISourceGenerator
     }
 
     /// <summary>
-    /// Gets code for parameter declaration.
+    /// Gets parameters list.
     /// </summary>
-    /// <param name="methodSymbol">Method symbol from which we copy parameter.</param>
-    /// <param name="parameter">Parameter to copy.</param>
-    /// <param name="index">Index of parameter to copy.</param>
-    /// <returns>Generated syntax node for the parameter.</returns>
-    protected abstract SyntaxNode GetParameterDeclaration(IMethodSymbol methodSymbol, IParameterSymbol parameter, int index);
+    /// <param name="methodSymbol">Method symbol from which we copy parameters.</param>
+    /// <returns>Generated syntax node for the parameters list.</returns>
+    protected abstract SyntaxNode GetParameters(IMethodSymbol methodSymbol);
 
     private static string GetAccessibility(Accessibility a)
     {
@@ -917,7 +915,7 @@ namespace {namespaceName}
         var originalParameters = methodSymbol.Parameters;
 
         bool hasCustomSql = methodGenerationContext.CustomSqlParameter != null;
-        var signature = $"({string.Join(", ", originalParameters.Select((parameterSymbol, index) => this.GetParameterDeclaration(methodSymbol, parameterSymbol, index)))})";
+        var signature = this.GetParameters(methodSymbol).ToString();
         var itemType = methodGenerationContext.ItemType;
         var getConnection = this.GetConnectionStatement(methodGenerationContext);
         var isList = methodGenerationContext.IsList || methodGenerationContext.IsEnumerable;
@@ -929,7 +927,8 @@ namespace {namespaceName}
         {
             if (methodSymbol.ReturnType.Name == "Task")
             {
-                returnTypeName = "Task<" + returnType + "?>";
+                var x = methodGenerationContext.ClassGenerationContext.CreateTaskType(returnType);
+                returnTypeName = x.ToString();
             }
             else if (!methodGenerationContext.IsDataReader)
             {

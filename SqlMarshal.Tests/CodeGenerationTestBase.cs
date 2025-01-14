@@ -57,7 +57,7 @@ public class CodeGenerationTestBase
 
     protected string GetVisualBasicGeneratedOutput(string source)
     {
-        var syntaxTree = VisualBasicSyntaxTree.ParseText(source);
+        var syntaxTree = VisualBasicSyntaxTree.ParseText("Imports SqlMarshal.Annotations\r\n" + source);
 
         var references = new List<MetadataReference>();
         Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
