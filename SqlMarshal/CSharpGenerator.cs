@@ -70,7 +70,16 @@ namespace SqlMarshal.Annotations
     }
 
     /// <inheritdoc/>
-    protected override SyntaxNode GetParameterDeclaration(IMethodSymbol methodSymbol, IParameterSymbol parameter, int index)
+    protected override SyntaxNode GetParameters(IMethodSymbol methodSymbol)
+    {
+        var parametersNodes = methodSymbol.Parameters.Select((parameterSymbol, index) => GetParameterDeclaration(methodSymbol, parameterSymbol, index));
+        var separatedList = methodSymbol.Parameters.Length == 0
+            ? SeparatedList<ParameterSyntax>()
+            : SeparatedList(parametersNodes, methodSymbol.Parameters.Take(methodSymbol.Parameters.Length - 1).Select(_ => Token(SyntaxKind.CommaToken).WithTrailingTrivia(Whitespace(" "))));
+        return ParameterList(separatedList);
+    }
+
+    private static ParameterSyntax GetParameterDeclaration(IMethodSymbol methodSymbol, IParameterSymbol parameter, int index)
     {
         var typeAsClause = ParseTypeName(parameter.Type.ToDisplayString()).WithTrailingTrivia(Whitespace(" "));
         if (parameter.RefKind == RefKind.Out)

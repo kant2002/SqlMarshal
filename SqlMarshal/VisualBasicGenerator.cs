@@ -27,39 +27,39 @@ public class VisualBasicGenerator : AbstractGenerator
 
 Namespace SqlMarshal.Annotations
 
-<System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple:=True)>
-Friend NotInheritable Class SqlMarshalAttribute
-    Inherits System.Attribute
+    <System.AttributeUsage(System.AttributeTargets.Method, AllowMultiple:=True)>
+    Friend NotInheritable Class SqlMarshalAttribute
+        Inherits System.Attribute
 
-    Public Sub New()
-        StoredProcedureName = """"
-    End Sub
+        Public Sub New()
+            StoredProcedureName = """"
+        End Sub
 
-    Public Sub New(name As String)
-        StoredProcedureName = name
-    End Sub
+        Public Sub New(name As String)
+            StoredProcedureName = name
+        End Sub
 
-    Public Property StoredProcedureName As String
-End Class
+        Public Property StoredProcedureName As String
+    End Class
 
-<System.AttributeUsage(System.AttributeTargets.Parameter, AllowMultiple:=False)>
-Friend NotInheritable Class RawSqlAttribute
-    Inherits System.Attribute
+    <System.AttributeUsage(System.AttributeTargets.Parameter, AllowMultiple:=False)>
+    Friend NotInheritable Class RawSqlAttribute
+        Inherits System.Attribute
 
-    Public Sub New()
-    End Sub
-End Class
+        Public Sub New()
+        End Sub
+    End Class
 
-<System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple:=False)>
-Friend NotInheritable Class RepositoryAttribute
-    Inherits System.Attribute
+    <System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple:=False)>
+    Friend NotInheritable Class RepositoryAttribute
+        Inherits System.Attribute
 
-    Public Sub New(entityType As System.Type)
-        EntityType = entityType
-    End Sub
+        Public Sub New(entityType As System.Type)
+            EntityType = entityType
+        End Sub
 
-    Public Property EntityType As System.Type
-End Class
+        Public Property EntityType As System.Type
+    End Class
 
 End Namespace
 ";
@@ -75,7 +75,16 @@ End Namespace
     }
 
     /// <inheritdoc/>
-    protected override SyntaxNode GetParameterDeclaration(IMethodSymbol methodSymbol, IParameterSymbol parameter, int index)
+    protected override SyntaxNode GetParameters(IMethodSymbol methodSymbol)
+    {
+        var parametersNodes = methodSymbol.Parameters.Select((parameterSymbol, index) => GetParameterDeclaration(methodSymbol, parameterSymbol, index));
+        var separatedList = methodSymbol.Parameters.Length == 0
+            ? SeparatedList<ParameterSyntax>()
+            : SeparatedList(parametersNodes, methodSymbol.Parameters.Take(methodSymbol.Parameters.Length - 1).Select(_ => Token(SyntaxKind.CommaToken).WithTrailingTrivia(Whitespace(" "))));
+        return ParameterList(separatedList);
+    }
+
+    private static ParameterSyntax GetParameterDeclaration(IMethodSymbol methodSymbol, IParameterSymbol parameter, int index)
     {
         var typeAsClause = SimpleAsClause(ParseTypeName(parameter.Type.ToDisplayString()).WithLeadingTrivia(Whitespace(" ")));
         if (parameter.RefKind == RefKind.Out)
@@ -111,12 +120,12 @@ End Namespace
                     return;
                 }
 
-                if (methodSymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "SqlMarshalAttribute"))
+                if (methodSymbol.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "SqlMarshal.Annotations.SqlMarshalAttribute"))
                 {
                     this.Methods.Add(methodSymbol);
                 }
 
-                if (methodSymbol.ContainingType.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "RepositoryAttribute"))
+                if (methodSymbol.ContainingType.GetAttributes().Any(ad => ad.AttributeClass?.ToDisplayString() == "SqlMarshal.Annotations.RepositoryAttribute"))
                 {
                     this.Methods.Add(methodSymbol);
                 }

@@ -7,6 +7,7 @@
 namespace SqlMarshal;
 
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using static SqlMarshal.Extensions;
@@ -58,6 +59,13 @@ internal class ClassGenerationContext
     public bool HasEfCore => this.ConnectionField == null && this.Methods.All(_ => _.ConnectionParameter == null);
 
     public bool HasCollections => !this.HasEfCore || this.Methods.Any(_ => (_.IsList || _.IsEnumerable) && (IsScalarType(_.ItemType) || IsTuple(_.ItemType)));
+
+    public INamedTypeSymbol CreateTaskType(ITypeSymbol nestedType)
+    {
+        var taskType = this.GeneratorExecutionContext.Compilation.GetTypeByMetadataName($"System.Threading.Tasks.Task`1")!;
+        var taskedType = taskType.Construct(ImmutableArray.Create(nestedType), ImmutableArray.Create(nestedType.NullableAnnotation == NullableAnnotation.None ? NullableAnnotation.Annotated : nestedType.NullableAnnotation));
+        return taskedType;
+    }
 
     private static IFieldSymbol? GetConnectionField(INamedTypeSymbol classSymbol)
     {

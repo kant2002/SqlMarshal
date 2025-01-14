@@ -249,7 +249,7 @@ namespace Foo
 
     partial class C
     {
-        public partial async Task<Item?> M()
+        public partial async System.Threading.Tasks.Task<Item?> M()
         {
             var connection = this.dbContext.Database.GetDbConnection();
             using var command = connection.CreateCommand();
@@ -311,7 +311,7 @@ namespace Foo
 
     partial class C
     {
-        public partial async Task<Foo.Item?> M()
+        public partial async System.Threading.Tasks.Task<Foo.Item?> M()
         {
             var connection = this.connection;
             using var command = connection.CreateCommand();
