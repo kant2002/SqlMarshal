@@ -24,7 +24,7 @@ namespace Foo
         public static partial Task<int> M(this DbConnection connection, int clientId, string? personId);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -87,7 +87,7 @@ namespace Foo
         public static partial Task<int> M(DbConnection connection, int clientId, string? personId);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -150,7 +150,7 @@ namespace Foo
         public static partial Task<int> M(DbConnection conn, int clientId, string? personId);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -220,7 +220,7 @@ namespace Foo
         public partial Task<IList<Item>> M(DbConnection connection)
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -288,7 +288,7 @@ namespace Foo
         public static partial int M(this CustomDbContext context, int clientId, string? personId);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 

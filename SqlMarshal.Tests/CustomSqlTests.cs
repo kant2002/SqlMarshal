@@ -26,7 +26,7 @@ namespace Foo
         public partial int M([RawSql]string sql, int clientId, string? personId);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -97,7 +97,7 @@ namespace Foo
         public partial IList<Item> M([RawSql]string sql)
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 

@@ -11,14 +11,28 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using VerifyMSTest;
 
-public class CodeGenerationTestBase
+public class CodeGenerationTestBase : VerifyBase
 {
-    protected string GetCSharpGeneratedOutput(string source, NullableContextOptions nullableContextOptions)
+    static CodeGenerationTestBase()
+    {
+        // To disable Visual Studio popping up on every test execution. Also make tests work on .NET 6
+        Environment.SetEnvironmentVariable("DiffEngine_Disabled", "true");
+        Environment.SetEnvironmentVariable("Verify_DisableClipboard", "true");
+    }
+
+    protected static Task VerifyCSharp(string source, NullableContextOptions nullableContextOptions)
+    {
+        return Verifier.Verify(GetCSharpGeneratedOutput(source, nullableContextOptions)).UseDirectory("Snapshots");
+    }
+
+    protected static string GetCSharpGeneratedOutput(string source, NullableContextOptions nullableContextOptions)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText("using SqlMarshal.Annotations;\r\n" + source);
 
@@ -55,7 +69,7 @@ public class CodeGenerationTestBase
         return output;
     }
 
-    protected string GetVisualBasicGeneratedOutput(string source)
+    protected static string GetVisualBasicGeneratedOutput(string source)
     {
         var syntaxTree = VisualBasicSyntaxTree.ParseText("Imports SqlMarshal.Annotations\r\n" + source);
 
