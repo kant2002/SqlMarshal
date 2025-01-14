@@ -34,7 +34,7 @@ namespace Foo
         public partial IList<TestEntity> FindAll();
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -104,7 +104,7 @@ namespace Foo
         public partial TestEntity? FindById(int id);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -183,7 +183,7 @@ namespace Foo
         public partial int Count();
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -241,7 +241,7 @@ namespace Foo
         public partial void DeleteAll();
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -298,7 +298,7 @@ namespace Foo
         public partial void DeleteById(int id);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -367,7 +367,7 @@ namespace Foo
         public partial void Update(int id, string name, string description);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -452,7 +452,7 @@ namespace Foo
         public partial void Update(int id, string name, string description);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -531,7 +531,7 @@ namespace Foo
         public partial void Insert(int id, string name, string description);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 

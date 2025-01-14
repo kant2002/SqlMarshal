@@ -26,7 +26,7 @@ namespace Foo
         public partial Task<int> M(int clientId, string? personId);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -91,7 +91,7 @@ namespace Foo
         public partial Task<int> M(int clientId, out int personId);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -165,7 +165,7 @@ namespace Foo
         public partial Task<IList<Item>> M()
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -227,7 +227,7 @@ namespace Foo
         public partial Task<Item> M()
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -290,7 +290,7 @@ namespace Foo
         public partial Task<Item> M()
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -351,7 +351,7 @@ namespace Foo
         public partial Task<IList<Item>> M(int clientId, out int? personId)
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
@@ -417,7 +417,7 @@ namespace Foo
         public partial Task M(int clientId, string? personId);
     }
 }";
-        string output = this.GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
+        string output = GetCSharpGeneratedOutput(source, NullableContextOptions.Disable);
 
         Assert.IsNotNull(output);
 
